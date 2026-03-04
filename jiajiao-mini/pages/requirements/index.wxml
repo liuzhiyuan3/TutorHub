@@ -1,0 +1,6 @@
+<view class="card" wx:for="{{list}}" wx:key="id">
+  <view style="font-weight:600;">{{item.requirementTitle}}</view>
+  <view style="color:#6b7280;margin-top:8rpx;">{{item.requirementGrade}}｜{{item.requirementAddress}}</view>
+  <view style="margin:8rpx 0;">薪资：{{item.requirementSalary}} 元</view>
+  <view class="btn" bindtap="receive" data-id="{{item.id}}">我要接单</view>
+</view>
