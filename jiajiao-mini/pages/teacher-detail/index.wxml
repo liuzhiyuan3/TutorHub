@@ -1,0 +1,8 @@
+<view class="card" wx:if="{{teacher}}">
+  <view style="font-size:34rpx;font-weight:600;">{{teacher.teacherIdentity}}</view>
+  <view style="margin-top:12rpx;">学校：{{teacher.teacherSchool || '-'}}</view>
+  <view>专业：{{teacher.teacherMajor || '-'}}</view>
+  <view>学历：{{teacher.teacherEducation || '-'}}</view>
+  <view>教龄：{{teacher.teacherTeachingYears}} 年</view>
+  <view style="margin-top:12rpx;color:#4b5563;">{{teacher.teacherSelfDescription || '暂无个人介绍'}}</view>
+</view>

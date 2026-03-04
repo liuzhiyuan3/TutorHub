@@ -1,0 +1,15 @@
+import request from '../utils/request'
+
+export const adminLogin = (payload) => request.post('/api/auth/admin/login', payload)
+export const pageUsers = (params) => request.get('/api/admin/users/page', { params })
+export const pageTeachers = (params) => request.get('/api/admin/teachers/page', { params })
+export const auditTeacher = (id, status) => request.put(`/api/admin/teachers/${id}/audit`, { status })
+export const pageRequirements = (params) => request.get('/api/admin/requirements/page', { params })
+export const pageOrders = (params) => request.get('/api/admin/orders/page', { params })
+export const updateOrderStatus = (id, payload) => request.put(`/api/admin/orders/${id}/status`, payload)
+export const pageSubjects = (params) => request.get('/api/admin/content/subjects/page', { params })
+export const saveSubject = (payload) => request.post('/api/admin/content/subjects', payload)
+export const pageSchools = (params) => request.get('/api/admin/content/schools/page', { params })
+export const saveSchool = (payload) => request.post('/api/admin/content/schools', payload)
+export const pageRegions = (params) => request.get('/api/admin/content/regions/page', { params })
+export const saveRegion = (payload) => request.post('/api/admin/content/regions', payload)

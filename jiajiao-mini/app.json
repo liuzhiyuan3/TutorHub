@@ -1,0 +1,30 @@
+{
+  "pages": [
+    "pages/login/index",
+    "pages/home/index",
+    "pages/teachers/index",
+    "pages/teacher-detail/index",
+    "pages/requirement-create/index",
+    "pages/requirements/index",
+    "pages/orders/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "家教平台",
+    "navigationBarBackgroundColor": "#2563eb",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f3f4f6"
+  },
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#2563eb",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/requirements/index", "text": "接单" },
+      { "pagePath": "pages/orders/index", "text": "订单" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
