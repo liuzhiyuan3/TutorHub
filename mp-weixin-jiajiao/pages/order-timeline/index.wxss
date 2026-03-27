@@ -1,0 +1,42 @@
+.section-title-sm {
+  font-size: 30rpx;
+}
+
+.retry-btn {
+  margin-top: 10rpx;
+}
+
+.skeleton-card .line {
+  margin-top: 16rpx;
+}
+
+.timeline-card {
+  display: flex;
+  gap: 14rpx;
+}
+
+.timeline-dot {
+  width: 16rpx;
+  height: 16rpx;
+  margin-top: 14rpx;
+  border-radius: 999rpx;
+  background: #2f81f7;
+  box-shadow: 0 0 0 8rpx rgba(47, 129, 247, 0.16);
+}
+
+.timeline-main {
+  flex: 1;
+}
+
+.node-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.node-title {
+  font-size: 30rpx;
+  color: #1f3f72;
+  font-weight: 700;
+}

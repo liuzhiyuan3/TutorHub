@@ -1,0 +1,45 @@
+<view class="page-wrap">
+  <view class="card">
+    <view class="section-head">
+      <view class="section-title section-title-sm">订单轨迹</view>
+      <view class="section-sub">共 {{list.length}} 条</view>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="error-box">
+    {{error}}
+    <view class="btn ghost retry-btn" bindtap="load">重试</view>
+  </view>
+
+  <view wx:if="{{loading}}">
+    <view class="card skeleton-card" wx:for="{{3}}" wx:key="*this">
+      <view class="skeleton line-short"></view>
+      <view class="skeleton line"></view>
+    </view>
+  </view>
+
+  <view wx:elif="{{!list.length}}" class="card">
+    <view class="empty-box">暂无轨迹数据</view>
+  </view>
+
+  <block wx:else>
+    <view class="card timeline-card" wx:for="{{list}}" wx:key="nodeCode">
+      <view class="timeline-dot"></view>
+      <view class="timeline-main">
+        <view class="node-head">
+          <view class="node-title">{{item.nodeName || '-'}}</view>
+          <view class="tag info">{{item.operatorType || 'system'}}</view>
+        </view>
+        <view class="muted">操作者：{{item.operatorName || '-'}}</view>
+        <view class="muted">时间：{{item.operateTime || '-'}}</view>
+        <view class="muted" wx:if="{{item.remark}}">备注：{{item.remark}}</view>
+      </view>
+    </view>
+  </block>
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+</view>

@@ -1,0 +1,50 @@
+@import "../static/iconfont/iconfont.wxss";
+
+.tab-shell {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8rpx 16rpx calc(env(safe-area-inset-bottom) + 8rpx);
+  background: transparent;
+  z-index: 999;
+}
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1rpx solid #d9e7ff;
+  box-shadow: 0 12rpx 30rpx rgba(47, 103, 200, 0.16);
+  padding: 10rpx;
+}
+
+.tab-item {
+  flex: 1;
+  height: 86rpx;
+  border-radius: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  color: #6f839f;
+}
+
+.tab-item.active {
+  background: linear-gradient(180deg, #f2f8ff, #eaf2ff);
+  color: #2f67c8;
+}
+
+.tab-icon {
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.tab-text {
+  font-size: 20rpx;
+  line-height: 1;
+  font-weight: 600;
+}

@@ -1,0 +1,55 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/login/index",
+    "pages/register/index",
+    "pages/teachers/index",
+    "pages/teacher-detail/index",
+    "pages/dispatch-detail/index",
+    "pages/requirement-create/index",
+    "pages/teacher-profile-edit/index",
+    "pages/order-timeline/index",
+    "pages/pay/index",
+    "pages/pay-result/index",
+    "pages/requirements/index",
+    "pages/orders/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "家教平台",
+    "navigationBarBackgroundColor": "#2f7cf6",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f2f7ff"
+  },
+  "usingComponents": {
+    "van-button": "/miniprogram_npm/@vant/weapp/dist/button/index",
+    "van-field": "/miniprogram_npm/@vant/weapp/dist/field/index",
+    "van-cell": "/miniprogram_npm/@vant/weapp/dist/cell/index",
+    "van-popup": "/miniprogram_npm/@vant/weapp/dist/popup/index",
+    "van-action-sheet": "/miniprogram_npm/@vant/weapp/dist/action-sheet/index",
+    "van-empty": "/miniprogram_npm/@vant/weapp/dist/empty/index",
+    "van-loading": "/miniprogram_npm/@vant/weapp/dist/loading/index"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#6f839f",
+    "selectedColor": "#2f7cf6",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页" },
+      { "pagePath": "pages/requirements/index", "text": "需求" },
+      { "pagePath": "pages/orders/index", "text": "订单" },
+      { "pagePath": "pages/profile/index", "text": "我的" }
+    ]
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于按距离筛选教员、定位授课地址与展示个人位置"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

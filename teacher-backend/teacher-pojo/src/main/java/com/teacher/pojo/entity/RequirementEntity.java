@@ -19,9 +19,18 @@ public class RequirementEntity {
     private String requirementGrade;
     private String regionId;
     private String requirementAddress;
+    private BigDecimal requirementLongitude;
+    private BigDecimal requirementLatitude;
     private Integer requirementTutoringMethod;
     private String requirementFrequency;
     private BigDecimal requirementSalary;
+    private String studentGender;
+    private String salaryText;
+    private String crossStreet;
+    private String studentDetail;
+    private String teacherQualification;
+    private String teacherGenderPreference;
+    private String teacherRequirementText;
     private String requirementOther;
     private String requirementImages;
     private Integer requirementStatus;

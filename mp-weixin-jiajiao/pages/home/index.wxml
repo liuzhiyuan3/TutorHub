@@ -1,0 +1,231 @@
+<view class="page-wrap tab-page">
+  <view class="hero-banner hero-banner-plus">
+    <view class="hero-top">
+      <view class="hero-city"><text class="i i-location inline-icon"></text>{{cityName}}</view>
+      <view class="hero-role">{{ userTypeText }}</view>
+    </view>
+    <view class="hero-title">家教114</view>
+    <view class="hero-subtitle">专注家教服务</view>
+    <view class="hero-tip">更快找到合适老师</view>
+  </view>
+
+  <view class="card quick-card">
+    <view class="section-head">
+      <view class="section-title-wrap">
+        <text class="section-icon i i-menu"></text>
+        <view class="section-title section-title-sm">快捷入口</view>
+      </view>
+      <view class="tag info">{{roleMode === 'guest' ? '游客模式' : (roleMode === 'teacher' ? '教员模式' : '家长模式')}}</view>
+    </view>
+    <view class="section-desc">围绕找老师、发需求、接单与订单追踪的完整流程</view>
+
+    <view wx:if="{{roleMode === 'guest'}}" class="guest-tip">
+      当前为游客模式，可先浏览内容；涉及预约、接单、发布需求时再登录。
+      <view class="btn ghost" bindtap="goLogin"><text class="i i-wechat inline-icon"></text>立即登录</view>
+    </view>
+
+    <view class="grid role-grid" wx:if="{{roleMode === 'parent'}}">
+      <view class="grid-item" bindtap="goTeachers">
+        <text class="i i-search grid-item-icon"></text>
+        <view class="grid-title">快速请家教</view>
+        <view class="grid-sub">我要挑选教员</view>
+      </view>
+      <view class="grid-item" bindtap="goRequirementCreate">
+        <text class="i i-requirement grid-item-icon"></text>
+        <view class="grid-title">发布家教需求</view>
+        <view class="grid-sub">家长快捷发布</view>
+      </view>
+      <view class="grid-item" bindtap="goRequirements">
+        <text class="i i-menu grid-item-icon"></text>
+        <view class="grid-title">需求广场</view>
+        <view class="grid-sub">浏览平台需求信息</view>
+      </view>
+      <view class="grid-item" bindtap="goOrders">
+        <text class="i i-order grid-item-icon"></text>
+        <view class="grid-title">我的订单</view>
+        <view class="grid-sub">跟踪订单状态</view>
+      </view>
+    </view>
+
+    <view class="grid role-grid" wx:elif="{{roleMode === 'teacher'}}">
+      <view class="grid-item" bindtap="goRequirements">
+        <text class="i i-requirement grid-item-icon"></text>
+        <view class="grid-title">接单列表</view>
+        <view class="grid-sub">查看可接需求</view>
+      </view>
+      <view class="grid-item" bindtap="goTeachers">
+        <text class="i i-search grid-item-icon"></text>
+        <view class="grid-title">教员名录</view>
+        <view class="grid-sub">查看热门教员</view>
+      </view>
+      <view class="grid-item" bindtap="goOrders">
+        <text class="i i-order grid-item-icon"></text>
+        <view class="grid-title">我的订单</view>
+        <view class="grid-sub">管理授课进度</view>
+      </view>
+      <view class="grid-item" bindtap="goRequirements">
+        <text class="i i-location grid-item-icon"></text>
+        <view class="grid-title">需求筛选</view>
+        <view class="grid-sub">按学科和区域匹配</view>
+      </view>
+    </view>
+
+    <view class="grid role-grid" wx:else>
+      <view class="grid-item" bindtap="goTeachers">
+        <text class="i i-search grid-item-icon"></text>
+        <view class="grid-title">浏览教员</view>
+        <view class="grid-sub">先看老师再登录</view>
+      </view>
+      <view class="grid-item" bindtap="goRequirements">
+        <text class="i i-requirement grid-item-icon"></text>
+        <view class="grid-title">浏览需求</view>
+        <view class="grid-sub">先看需求信息</view>
+      </view>
+      <view class="grid-item" bindtap="goOrders">
+        <text class="i i-order grid-item-icon"></text>
+        <view class="grid-title">我的订单</view>
+        <view class="grid-sub">登录后查看详情</view>
+      </view>
+      <view class="grid-item" bindtap="goLogin">
+        <text class="i i-wechat grid-item-icon"></text>
+        <view class="grid-title">立即登录</view>
+        <view class="grid-sub">选择家长或教员</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="error-box">
+    {{error}}
+    <view class="btn ghost retry-btn" bindtap="loadOverview">重试</view>
+  </view>
+
+  <view class="card" wx:if="{{loading}}">
+    <view class="skeleton"></view>
+    <view class="skeleton line"></view>
+    <view class="skeleton line short"></view>
+  </view>
+
+  <view class="card" wx:if="{{!loading && slides.length}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-menu"></text><view class="section-title section-title-sm">运营位</view></view>
+      <view class="section-sub">轮播推荐</view>
+    </view>
+    <view class="banner-list">
+      <view class="banner-item" wx:for="{{slides}}" wx:key="id" bindtap="openSlide" data-url="{{item.link}}">
+        <image wx:if="{{item.image}}" class="banner-img" src="{{item.image}}" mode="aspectFill"></image>
+        <view class="banner-title">{{item.title || '运营推荐'}}</view>
+        <view class="banner-url">{{item.link || '暂无链接'}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-search"></text><view class="section-title section-title-sm">热门科目</view></view>
+      <view class="section-sub">按科目筛选</view>
+    </view>
+    <view wx:if="{{hotSubjects.length}}" class="chip-wrap">
+      <view class="tag-chip" wx:for="{{hotSubjects}}" wx:key="id" bindtap="onTapSubject" data-id="{{item.id}}">{{item.subjectName}}</view>
+    </view>
+    <view wx:else class="empty-box">暂无热门科目</view>
+  </view>
+
+  <view class="card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-location"></text><view class="section-title section-title-sm">服务区域</view></view>
+      <view class="section-sub">热门城市区域</view>
+    </view>
+    <view wx:if="{{hotRegions.length}}" class="chip-wrap">
+      <view class="chip" wx:for="{{hotRegions}}" wx:key="id" bindtap="onTapRegion" data-id="{{item.id}}">{{item.regionName}}</view>
+    </view>
+    <view wx:else class="empty-box">暂无区域数据</view>
+  </view>
+
+  <view class="card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-home"></text><view class="section-title section-title-sm">特色学校</view></view>
+      <view class="section-sub">按学校筛选</view>
+    </view>
+    <view wx:if="{{hotSchools.length}}" class="chip-wrap">
+      <view class="chip" wx:for="{{hotSchools}}" wx:key="id" bindtap="onTapSchool" data-name="{{item.schoolName}}">{{item.schoolName}}</view>
+    </view>
+    <view wx:else class="empty-box">暂无学校数据</view>
+  </view>
+
+  <view class="card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-profile"></text><view class="section-title section-title-sm">热门教员</view></view>
+      <view class="section-sub">优先推荐</view>
+    </view>
+    <view wx:if="{{featuredTeachers.length}}">
+      <view class="teacher-row" wx:for="{{featuredTeachers}}" wx:key="teacherId" bindtap="goTeacherDetail" data-id="{{item.teacherId}}">
+        <image
+          wx:if="{{item.teacherPhoto && !item.avatarError}}"
+          class="teacher-avatar"
+          src="{{item.teacherPhoto}}"
+          mode="aspectFill"
+          data-id="{{item.teacherId}}"
+          binderror="onFeaturedAvatarError"
+        ></image>
+        <view wx:else class="teacher-avatar placeholder">教员</view>
+        <view class="teacher-main">
+          <view class="teacher-name">{{item.userName || item.teacherIdentity || '教员'}}</view>
+          <view class="teacher-meta">{{item.teacherSchool || '-'}} {{item.teacherMajor || ''}}</view>
+          <view class="teacher-meta">成功{{item.teacherSuccessCount || 0}}次 · 热度{{item.teacherViewCount || 0}}</view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-box">暂无教员推荐</view>
+  </view>
+
+  <view class="card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-order"></text><view class="section-title section-title-sm">最新派单记录</view></view>
+      <view class="section-sub">实时更新</view>
+    </view>
+    <view wx:if="{{latestDispatchCards.length}}">
+      <view class="dispatch-item" wx:for="{{latestDispatchCards}}" wx:key="orderId" bindtap="goDispatchDetail" data-id="{{item.orderId}}">
+        <view class="dispatch-top">
+          <view class="dispatch-region">{{item.regionName || '-'}}</view>
+          <view class="dispatch-main">{{item.requirementGrade || ''}} {{item.subjectName || '-'}}</view>
+          <view class="dispatch-no">{{item.orderNumber || '-'}}</view>
+        </view>
+        <view class="dispatch-sub">{{item.summary || '已成功派单...'}}</view>
+      </view>
+    </view>
+    <view wx:else class="empty-box">暂无派单记录</view>
+  </view>
+
+  <view class="card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-requirement"></text><view class="section-title section-title-sm">最新需求</view></view>
+      <view class="section-sub">家长发布</view>
+    </view>
+    <view wx:if="{{latestRequirements.length}}">
+      <view class="req-item" wx:for="{{latestRequirements}}" wx:key="id">
+        <view class="req-title">{{item.requirementTitle || '-'}}</view>
+        <view class="req-sub">{{item.requirementGrade || '-'}} · {{item.requirementAddress || '-'}}</view>
+      </view>
+    </view>
+    <view wx:else class="empty-box">暂无最新需求</view>
+  </view>
+
+  <view class="card" wx:if="{{!loading && ads.length}}">
+    <view class="section-head">
+      <view class="section-title-wrap"><text class="section-icon i i-menu"></text><view class="section-title section-title-sm">广告推荐</view></view>
+      <view class="section-sub">点击复制链接</view>
+    </view>
+    <view class="ad-item" wx:for="{{ads}}" wx:key="id" bindtap="openAd" data-url="{{item.link}}">
+      <image wx:if="{{item.image}}" class="ad-img" src="{{item.image}}" mode="aspectFill"></image>
+      <view class="ad-title">{{item.title || '广告位'}}</view>
+      <view class="ad-url">{{item.link || '暂无链接'}}</view>
+    </view>
+  </view>
+
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+</view>

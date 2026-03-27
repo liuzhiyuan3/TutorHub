@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,6 +20,8 @@ public class TeacherInfoEntity {
     private String teacherHometown;
     private String teacherHomeAddress;
     private String teacherWorkAddress;
+    private BigDecimal teacherWorkLongitude;
+    private BigDecimal teacherWorkLatitude;
     private String teacherSchool;
     private String teacherMajor;
     private String teacherEducation;
@@ -28,6 +31,9 @@ public class TeacherInfoEntity {
     private Integer teacherSuccessCount;
     private Integer teacherViewCount;
     private Integer teacherAuditStatus;
+    private String teacherCertNo;
+    private String teacherCertImages;
+    private Integer teacherProfileCompleted;
     private Integer teacherEnableStatus;
     private Integer teacherDeleteStatus;
     private LocalDateTime createTime;

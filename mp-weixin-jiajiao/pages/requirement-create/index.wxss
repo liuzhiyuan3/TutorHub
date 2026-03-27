@@ -1,0 +1,118 @@
+.section-title-sm {
+  font-size: 30rpx;
+}
+
+.van-field-lite {
+  border: 1rpx solid #d8e6fb;
+  border-radius: 12rpx;
+  background: #f8fbff;
+  margin-bottom: 14rpx;
+}
+
+.textarea {
+  min-height: 120rpx;
+}
+
+.retry-btn {
+  margin-top: 10rpx;
+}
+
+.upload-wrap {
+  margin: 10rpx 0 6rpx;
+  padding: 14rpx;
+  border: 1rpx dashed #d6e4fa;
+  border-radius: 14rpx;
+  background: #f9fcff;
+}
+
+.upload-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upload-btn {
+  min-width: 160rpx !important;
+}
+
+.img-grid {
+  margin-top: 12rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.img-item {
+  width: 180rpx;
+}
+
+.img-preview {
+  width: 180rpx;
+  height: 132rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid #d9e8fd;
+}
+
+.img-remove {
+  margin-top: 6rpx;
+  text-align: center;
+  color: #d64a4a;
+  font-size: 22rpx;
+}
+
+.salary-wrap {
+  margin: 8rpx 0 10rpx;
+}
+
+.location-row {
+  margin-bottom: 14rpx;
+}
+
+.location-btn {
+  display: inline-block !important;
+}
+
+.location-tip {
+  margin-top: 8rpx;
+  color: #6380a6;
+  font-size: 22rpx;
+}
+
+.submit-btn {
+  margin-top: 10rpx;
+}
+
+.sheet-body {
+  padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.sheet-title {
+  font-size: 30rpx;
+  color: #243f67;
+  font-weight: 700;
+}
+
+.sheet-close {
+  font-size: 24rpx;
+  color: #6f86a8;
+}
+
+.sheet-btn {
+  margin-top: 10rpx;
+}
+
+.ghost-gap {
+  margin-top: 12rpx;
+}
+
+.sheet-tip {
+  margin-top: 12rpx;
+}

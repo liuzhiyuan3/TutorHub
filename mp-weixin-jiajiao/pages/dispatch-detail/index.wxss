@@ -1,0 +1,63 @@
+.detail-card {
+  padding-top: 6rpx;
+}
+
+.row-first {
+  padding: 10rpx 0 18rpx;
+  border-bottom: 1rpx solid #edf2fb;
+  font-size: 34rpx;
+}
+
+.line-row {
+  display: flex;
+  padding: 18rpx 0;
+  border-bottom: 1rpx dashed #e8eef8;
+}
+
+.label {
+  width: 180rpx;
+  color: #8a98ad;
+  font-size: 30rpx;
+}
+
+.value {
+  flex: 1;
+  color: #253f66;
+  font-size: 36rpx;
+}
+
+.value.multi {
+  font-size: 32rpx;
+  line-height: 1.5;
+}
+
+.pill {
+  display: inline-block;
+  padding: 4rpx 14rpx;
+  border-radius: 12rpx;
+  background: #f3921d;
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.section-title {
+  margin-top: 24rpx;
+  margin-bottom: 4rpx;
+  color: #f3921d;
+  font-size: 48rpx;
+  font-weight: 700;
+}
+
+.mask-tip {
+  margin-top: 18rpx;
+  padding: 16rpx;
+  border-radius: 14rpx;
+  background: #fff7ec;
+  color: #8a6a3c;
+  font-size: 26rpx;
+}
+
+.mask-tip .btn {
+  margin-top: 10rpx;
+}

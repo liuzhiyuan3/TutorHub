@@ -1,0 +1,8 @@
+<view class="page-wrap">
+  <view class="card">
+    <view class="{{ok ? 'tag success' : 'tag error'}}">{{ok ? '支付成功' : '支付失败'}}</view>
+    <view class="section-title section-title-sm mt-12r">{{message}}</view>
+    <view class="section-sub mt-8r">订单ID：{{orderId}}</view>
+    <view class="btn mt-16r" bindtap="goOrders">返回订单</view>
+  </view>
+</view>

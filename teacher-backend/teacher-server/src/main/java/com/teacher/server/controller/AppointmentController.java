@@ -2,8 +2,10 @@ package com.teacher.server.controller;
 
 import com.teacher.common.model.ApiResponse;
 import com.teacher.common.model.PageResult;
+import com.teacher.pojo.dto.AppointmentCreateRequest;
 import com.teacher.pojo.entity.AppointmentEntity;
 import com.teacher.server.service.ExtendedBusinessService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,13 +18,18 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ApiResponse<AppointmentEntity> create(@RequestBody AppointmentEntity entity) {
-        return ApiResponse.ok(extendedBusinessService.createAppointment(entity));
+    public ApiResponse<AppointmentEntity> create(@Valid @RequestBody AppointmentCreateRequest request) {
+        return ApiResponse.ok(extendedBusinessService.createAppointment(request));
     }
 
     @GetMapping("/my/page")
     public ApiResponse<PageResult<AppointmentEntity>> myPage(@RequestParam(defaultValue = "1") long pageNo,
                                                              @RequestParam(defaultValue = "10") long pageSize) {
         return ApiResponse.ok(extendedBusinessService.myAppointments(pageNo, pageSize));
+    }
+
+    @PutMapping("/{id}/status")
+    public ApiResponse<AppointmentEntity> updateStatus(@PathVariable String id, @RequestParam Integer status) {
+        return ApiResponse.ok(extendedBusinessService.updateAppointmentStatus(id, status));
     }
 }

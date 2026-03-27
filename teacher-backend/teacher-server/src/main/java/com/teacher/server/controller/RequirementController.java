@@ -4,6 +4,8 @@ import com.teacher.common.model.ApiResponse;
 import com.teacher.common.model.PageResult;
 import com.teacher.pojo.dto.RequirementCreateRequest;
 import com.teacher.pojo.entity.RequirementEntity;
+import com.teacher.pojo.vo.PublicRequirementListItemVO;
+import com.teacher.pojo.vo.RequirementPublicDetailVO;
 import com.teacher.server.service.RequirementService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class RequirementController {
     }
 
     @GetMapping("/page")
-    public ApiResponse<PageResult<RequirementEntity>> page(
+    public ApiResponse<PageResult<PublicRequirementListItemVO>> page(
             @RequestParam(defaultValue = "1") long pageNo,
             @RequestParam(defaultValue = "10") long pageSize,
             @RequestParam(required = false) String subjectId,
@@ -39,7 +41,12 @@ public class RequirementController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<RequirementEntity> detail(@PathVariable String id) {
+    public ApiResponse<RequirementPublicDetailVO> detail(@PathVariable String id) {
         return ApiResponse.ok(requirementService.detail(id));
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ApiResponse<RequirementEntity> cancel(@PathVariable String id) {
+        return ApiResponse.ok(requirementService.cancelMyRequirement(id));
     }
 }

@@ -1,0 +1,61 @@
+.section-title-sm {
+  font-size: 30rpx;
+}
+
+.filter-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  background: rgba(237, 244, 255, 0.96);
+  backdrop-filter: blur(6rpx);
+  -webkit-backdrop-filter: blur(6rpx);
+}
+
+.retry-btn {
+  margin-top: 10rpx;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.order-no {
+  color: #1f3f72;
+  font-weight: 700;
+  font-size: 28rpx;
+}
+
+.amount {
+  margin-top: 10rpx;
+}
+
+.status-desc {
+  margin-top: 6rpx;
+  color: #60799a;
+  font-size: 23rpx;
+}
+
+.action-row {
+  margin-top: 14rpx;
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+.action-row .btn {
+  padding: 8rpx 12rpx;
+  font-size: 22rpx;
+}
+
+.skeleton-card .line {
+  margin-top: 16rpx;
+}
+
+.skeleton-card .short {
+  width: 70%;
+}
+
+.load-more-card {
+  text-align: center;
+}

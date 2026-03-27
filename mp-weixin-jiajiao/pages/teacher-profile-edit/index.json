@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "教员资料编辑",
+  "usingComponents": {
+    "auth-sheet": "/components/auth-sheet/index"
+  }
+}

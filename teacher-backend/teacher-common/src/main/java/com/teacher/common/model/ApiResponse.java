@@ -21,6 +21,7 @@ public class ApiResponse<T> {
     }
 
     public static <T> ApiResponse<T> fail(String message) {
-        return new ApiResponse<>(-1, message, null);
+        String safeMessage = (message == null || message.isBlank()) ? "request failed" : message;
+        return new ApiResponse<>(-1, safeMessage, null);
     }
 }

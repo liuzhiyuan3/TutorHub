@@ -1,7 +1,10 @@
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\MapperScanConfig.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\MybatisPlusConfig.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\OssProperties.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\QQMapProperties.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\SecurityConfig.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\WebMvcConfig.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\WechatProperties.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\admin\AdminBusinessController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\admin\AdminContentController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\admin\AdminOrderController.java
@@ -15,6 +18,10 @@ D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\ContentController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\DispatchRecordController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\FavoriteTeacherController.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\FileController.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\HomeController.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\LocationController.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\MockPayController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\OrderController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\RequirementController.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\controller\TeacherController.java
@@ -35,6 +42,7 @@ D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\RoleMenuMapper.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\SchoolMapper.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\SlideMapper.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\SubjectCategoryMapper.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\SubjectMapper.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\TeacherAuditMapper.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\mapper\TeacherInfoMapper.java
@@ -47,8 +55,14 @@ D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\AuthService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\ContentService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\ExtendedBusinessService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\HomeQueryService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\LocationService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\MockPayService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\OrderService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\OssStorageService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\RequirementService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\StatsService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\TeacherOrderStatsService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\TeacherService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\TeacherTeachingService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\UserService.java

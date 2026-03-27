@@ -1,0 +1,30 @@
+<view class="page-wrap register-wrap">
+  <view class="card register-card">
+    <view class="register-brand">账号注册</view>
+    <view class="section-title register-title">完善基础信息</view>
+    <view class="section-sub register-sub">信息仅用于身份识别与服务联络</view>
+
+    <view class="group-title">身份信息</view>
+    <picker mode="selector" range="{{userTypeOptions}}" range-key="label" bindchange="onTypeChange">
+      <view class="picker-field">注册身份：{{currentUserTypeLabel}}</view>
+    </picker>
+
+    <view class="group-title">基础资料</view>
+    <input class="input soft-input" placeholder="请输入姓名" value="{{form.name}}" data-key="name" bindinput="onInput" />
+    <input class="input soft-input" type="number" placeholder="请输入手机号" value="{{form.phone}}" data-key="phone" bindinput="onInput" />
+
+    <view class="group-title">账号安全</view>
+    <input class="input soft-input" placeholder="账号（4-20位字母、数字或下划线）" value="{{form.account}}" data-key="account" bindinput="onInput" />
+    <input class="input soft-input" password placeholder="密码（6-20位）" value="{{form.password}}" data-key="password" bindinput="onInput" />
+    <input class="input soft-input" password placeholder="确认密码" value="{{form.confirmPassword}}" data-key="confirmPassword" bindinput="onInput" />
+
+    <view class="protocol-row" bindtap="onToggleProtocol">
+      <view class="checkbox {{agreeProtocol ? 'checked' : ''}}">
+        <text wx:if="{{agreeProtocol}}" class="tick">✓</text>
+      </view>
+      <view class="protocol-text">我已阅读并同意《用户协议》与《隐私政策》</view>
+    </view>
+
+    <view class="btn wechat {{submitting ? 'disabled' : ''}}" bindtap="submitRegister">{{submitting ? '注册中...' : '注册并登录'}}</view>
+  </view>
+</view>

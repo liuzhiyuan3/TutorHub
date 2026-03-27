@@ -1,0 +1,5 @@
+<view class="reach-wrap">
+  <view wx:if="{{loading}}" class="reach-text">加载中...</view>
+  <view wx:elif="{{hasMore}}" class="reach-btn" bindtap="onLoadMore">加载更多</view>
+  <view wx:else class="reach-text">到底了，没有更多数据</view>
+</view>

@@ -1,0 +1,40 @@
+<view class="page-wrap">
+  <view class="card">
+    <view class="section-head">
+      <view class="section-title section-title-sm">教员资料编辑</view>
+      <view class="section-sub">独立编辑页</view>
+    </view>
+    <view class="section-sub">完善资料后提交审核，个人中心只展示摘要与审核状态。</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="card">
+    <view class="skeleton line-short"></view>
+    <view class="skeleton line"></view>
+    <view class="skeleton line short"></view>
+  </view>
+
+  <view wx:else class="card">
+    <input class="input" placeholder="教员身份" value="{{teacher.teacherIdentity}}" data-key="teacherIdentity" bindinput="onTeacherInput" />
+    <view class="portrait-row">
+      <image wx:if="{{teacher.teacherPhoto}}" class="teacher-photo" src="{{teacher.teacherPhoto}}" mode="aspectFill"></image>
+      <view wx:else class="portrait-placeholder">暂无教员照片</view>
+      <view class="btn ghost" bindtap="chooseTeacherPhoto">{{teacherPhotoUploading ? '上传中...' : '上传教员照片'}}</view>
+    </view>
+    <picker mode="selector" range="{{tutoringMethodOptions}}" range-key="label" bindchange="onTutoringMethodChange">
+      <view class="picker-field">授课方式：{{tutoringMethodOptions[tutoringMethodIndex].label}}</view>
+    </picker>
+    <input class="input" placeholder="学校" value="{{teacher.teacherSchool}}" data-key="teacherSchool" bindinput="onTeacherInput" />
+    <input class="input" placeholder="专业" value="{{teacher.teacherMajor}}" data-key="teacherMajor" bindinput="onTeacherInput" />
+    <input class="input" placeholder="教龄" type="number" value="{{teacher.teacherTeachingYears}}" data-key="teacherTeachingYears" bindinput="onTeacherInput" />
+    <input class="input" placeholder="学历" value="{{teacher.teacherEducation}}" data-key="teacherEducation" bindinput="onTeacherInput" />
+    <textarea class="input textarea" placeholder="教学经验" value="{{teacher.teacherExperience}}" data-key="teacherExperience" bindinput="onTeacherInput" />
+    <textarea class="input textarea" placeholder="自我描述" value="{{teacher.teacherSelfDescription}}" data-key="teacherSelfDescription" bindinput="onTeacherInput" />
+    <view class="btn {{saving ? 'disabled' : ''}}" bindtap="submitTeacherProfile">{{saving ? '提交中...' : '提交资料'}}</view>
+  </view>
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+</view>

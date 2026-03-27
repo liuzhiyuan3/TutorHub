@@ -1,0 +1,43 @@
+.section-title-sm {
+  font-size: 30rpx;
+}
+
+textarea.input {
+  min-height: 120rpx;
+}
+
+.portrait-row {
+  margin-top: 12rpx;
+  margin-bottom: 10rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.teacher-photo {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #dce8fb;
+}
+
+.portrait-placeholder {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 999rpx;
+  border: 1rpx dashed #d0ddf4;
+  background: #f6faff;
+  color: #6e86a5;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.line {
+  margin-top: 16rpx;
+}
+
+.short {
+  width: 70%;
+}

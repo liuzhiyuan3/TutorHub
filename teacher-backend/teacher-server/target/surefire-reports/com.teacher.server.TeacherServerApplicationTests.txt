@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.teacher.server.TeacherServerApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.012 s -- in com.teacher.server.TeacherServerApplicationTests
