@@ -1,0 +1,48 @@
+﻿<van-popup show="{{visible}}" position="bottom" round bind:close="onMaskTap" custom-style="background: transparent;">
+  <view class="sheet-panel" catchtouchmove="noop">
+    <view class="sheet-title">完善资料后继续</view>
+    <view class="sheet-sub">
+      <text wx:if="{{role === 'teacher'}}">教员身份需完善必填资料</text>
+      <text wx:else>完善资料可获得更好的匹配效果</text>
+    </view>
+    <view wx:if="{{missingFields.length > 0}}" class="missing-tip">
+      缺失项：{{missingFieldsText}}
+    </view>
+
+    <view class="avatar-row">
+      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" disabled="{{submitting || uploading}}">
+        <image class="avatar-img" src="{{avatarPreviewUrl}}" mode="aspectFill" binderror="onAvatarLoadError"></image>
+      </button>
+      <button class="ghost-btn" bindtap="chooseFromAlbum" disabled="{{submitting || uploading}}">相册上传头像</button>
+    </view>
+    <van-field
+      custom-class="field-lite"
+      required
+      label="昵称"
+      type="nickname"
+      placeholder="请输入昵称"
+      value="{{form.nickName}}"
+      data-key="nickName"
+      border="{{false}}"
+      bind:input="onInput"
+    />
+
+    <block wx:if="{{role === 'teacher'}}">
+      <van-field custom-class="field-lite" required label="身份" placeholder="如：在校大学生/在职教师" value="{{form.teacherIdentity}}" data-key="teacherIdentity" border="{{false}}" bind:input="onInput" />
+      <picker mode="selector" range="{{tutoringMethodOptions}}" range-key="label" bindchange="onTutoringMethodChange">
+        <view class="picker-field">授课方式：{{tutoringMethodLabel}}</view>
+      </picker>
+      <van-field custom-class="field-lite" label="教龄" type="digit" placeholder="教龄（年）" value="{{form.teacherTeachingYears}}" data-key="teacherTeachingYears" border="{{false}}" bind:input="onInput" />
+      <van-field custom-class="field-lite" required label="学校" placeholder="请输入学校" value="{{form.teacherSchool}}" data-key="teacherSchool" border="{{false}}" bind:input="onInput" />
+      <van-field custom-class="field-lite" required label="专业" placeholder="请输入专业" value="{{form.teacherMajor}}" data-key="teacherMajor" border="{{false}}" bind:input="onInput" />
+      <van-field custom-class="field-lite" required label="学历" placeholder="请输入学历" value="{{form.teacherEducation}}" data-key="teacherEducation" border="{{false}}" bind:input="onInput" />
+      <van-field custom-class="field-lite" type="textarea" autosize label="经验" placeholder="教学经验（选填）" value="{{form.teacherExperience}}" data-key="teacherExperience" border="{{false}}" bind:input="onInput" />
+      <van-field custom-class="field-lite" type="textarea" autosize label="介绍" placeholder="自我描述（选填）" value="{{form.teacherSelfDescription}}" data-key="teacherSelfDescription" border="{{false}}" bind:input="onInput" />
+    </block>
+
+    <van-button custom-class="submit-btn" type="success" loading="{{submitting}}" disabled="{{submitting || uploading}}" bind:click="submit">
+      {{submitting ? '提交中...' : '保存并进入'}}
+    </van-button>
+    <van-button wx:if="{{canSkip}}" custom-class="skip-btn" plain type="primary" disabled="{{submitting || uploading}}" bind:click="skip">暂不完善</van-button>
+  </view>
+</van-popup>

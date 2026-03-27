@@ -1,0 +1,267 @@
+.profile-page {
+  background: linear-gradient(180deg, #edf4ff 0%, #f4f8ff 48%, #eef6ff 100%);
+}
+
+.section-title-sm {
+  font-size: 30rpx;
+}
+
+.guest-card {
+  padding-top: 28rpx;
+}
+
+.profile-main-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  border: 1rpx solid #d9e8ff;
+}
+
+.profile-main-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+}
+
+.profile-user-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  min-width: 0;
+}
+
+.profile-user-meta {
+  min-width: 0;
+}
+
+.profile-user-name {
+  font-size: 34rpx;
+  line-height: 1.2;
+  color: #203f6f;
+  font-weight: 800;
+}
+
+.profile-user-account {
+  margin-top: 8rpx;
+  color: #5f7798;
+  font-size: 22rpx;
+  max-width: 420rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-tag {
+  margin-left: 10rpx;
+  flex: 0 0 auto;
+}
+
+.portrait-img,
+.teacher-photo {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #dce8fb;
+  background: #f5f9ff;
+  box-shadow: 0 8rpx 18rpx rgba(57, 95, 148, 0.12);
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10rpx;
+}
+
+.info-cell {
+  background: #f8fbff;
+  border: 1rpx solid #dfebff;
+  border-radius: 12rpx;
+  padding: 12rpx 14rpx;
+}
+
+.info-cell-wide {
+  grid-column: 1 / -1;
+}
+
+.info-cell-label {
+  font-size: 22rpx;
+  color: #6f84a3;
+}
+
+.info-cell-value {
+  margin-top: 6rpx;
+  font-size: 28rpx;
+  color: #2c4367;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-all;
+}
+
+.profile-actions-row {
+  margin-top: 16rpx;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+}
+
+.profile-actions-row .upload-btn {
+  grid-column: 1 / -1;
+}
+
+.upload-btn,
+.row-action-btn {
+  width: 100%;
+  height: 72rpx !important;
+  border-radius: 14rpx !important;
+  font-size: 26rpx !important;
+  font-weight: 700 !important;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+}
+
+.stat-item {
+  border: 1rpx solid #dfebff;
+  background: #f7fbff;
+  border-radius: 12rpx;
+  padding: 14rpx;
+  text-align: center;
+}
+
+.stat-num {
+  font-size: 42rpx;
+  color: #2d5fae;
+  font-weight: 700;
+}
+
+.stat-label {
+  margin-top: 6rpx;
+  color: #617998;
+  font-size: 22rpx;
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10rpx;
+}
+
+.quick-item {
+  text-align: center;
+  border: 1rpx solid #d8e6fb;
+  border-radius: 12rpx;
+  padding: 14rpx 6rpx;
+  background: linear-gradient(180deg, #fbfdff 0%, #f2f8ff 100%);
+  color: #2f67c8;
+  font-weight: 700;
+}
+
+.quick-icon {
+  font-size: 28rpx;
+}
+
+.quick-text {
+  margin-top: 6rpx;
+  font-size: 24rpx;
+}
+
+.teacher-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin: 10rpx 0 12rpx;
+}
+
+.teacher-summary-main {
+  flex: 1;
+}
+
+.teacher-summary-title {
+  font-size: 30rpx;
+  color: #203f6f;
+  font-weight: 700;
+}
+
+.teacher-summary-sub {
+  margin-top: 4rpx;
+  color: #60799a;
+  font-size: 23rpx;
+}
+
+.portrait-placeholder {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 999rpx;
+  border: 1rpx dashed #d0ddf4;
+  background: #f6faff;
+  color: #6e86a5;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.danger-card {
+  border-color: #ffe0e0;
+  background: linear-gradient(180deg, #ffffff, #fff8f8);
+}
+
+.panel-action-btn {
+  width: 100%;
+  margin: 0 auto;
+  display: block;
+  height: 70rpx !important;
+  border-radius: 14rpx !important;
+  font-size: 27rpx !important;
+  font-weight: 700 !important;
+}
+
+.profile-danger-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10rpx;
+}
+
+.profile-danger-row .van-button {
+  min-width: 0;
+}
+
+.profile-danger-inline-btn {
+  width: 100%;
+  height: 62rpx !important;
+  border-radius: 12rpx !important;
+  font-size: 24rpx !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.profile-danger-inline-btn .van-button__text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-danger-inline-btn--danger {
+  border-color: #ef4444 !important;
+  background: #ef4444 !important;
+}
+
+.wide-gap {
+  margin-top: 12rpx;
+}
+
+.retry-btn {
+  margin-top: 10rpx;
+}
+
+.line {
+  margin-top: 16rpx;
+}
+
+.short {
+  width: 70%;
+}

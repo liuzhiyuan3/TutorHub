@@ -4,6 +4,7 @@ import com.teacher.common.model.ApiResponse;
 import com.teacher.common.model.PageResult;
 import com.teacher.pojo.dto.TeacherProfileRequest;
 import com.teacher.pojo.entity.TeacherInfoEntity;
+import com.teacher.pojo.vo.TeacherPublicDetailVO;
 import com.teacher.server.service.TeacherService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -34,5 +35,15 @@ public class TeacherController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer auditStatus) {
         return ApiResponse.ok(teacherService.page(pageNo, pageSize, keyword, auditStatus));
+    }
+
+    @GetMapping("/{id}")
+    public ApiResponse<TeacherPublicDetailVO> detail(@PathVariable String id) {
+        return ApiResponse.ok(teacherService.publicDetail(id));
+    }
+
+    @GetMapping("/public/{id}")
+    public ApiResponse<TeacherPublicDetailVO> publicDetail(@PathVariable String id) {
+        return ApiResponse.ok(teacherService.publicDetail(id));
     }
 }

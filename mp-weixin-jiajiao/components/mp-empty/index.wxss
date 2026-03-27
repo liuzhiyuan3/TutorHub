@@ -1,0 +1,25 @@
+@import "../../static/iconfont/iconfont.wxss";
+
+.empty-box-wrap {
+  padding: 30rpx 20rpx;
+  border-radius: 18rpx;
+  border: 1rpx dashed #cfdcf2;
+  text-align: center;
+  background: linear-gradient(180deg, #f8fbff, #f2f8ff);
+}
+
+.empty-icon {
+  width: 76rpx;
+  height: 76rpx;
+  margin: 0 auto 12rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid #d7e6fb;
+  background: #ffffff;
+  color: #7e97bb;
+  font-size: 40rpx;
+}
+
+.empty-text {
+  color: #5f7ba2;
+  font-size: 24rpx;
+}

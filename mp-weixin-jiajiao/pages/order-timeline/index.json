@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "订单轨迹",
+  "usingComponents": {
+    "auth-sheet": "/components/auth-sheet/index"
+  }
+}

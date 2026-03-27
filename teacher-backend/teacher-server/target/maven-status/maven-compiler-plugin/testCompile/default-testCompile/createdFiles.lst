@@ -1,1 +1,3 @@
+com\teacher\server\controller\PublicTeacherMetricsApiTest.class
+com\teacher\server\service\TeacherOrderStatsServiceTest.class
 com\teacher\server\TeacherServerApplicationTests.class

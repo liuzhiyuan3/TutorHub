@@ -1,0 +1,80 @@
+<view class="page-wrap tab-page">
+  <view wx:if="{{guestMode}}" class="card">
+    <view class="section-title-wrap">
+      <text class="section-icon i i-order"></text>
+      <view class="section-title section-title-sm">我的订单</view>
+    </view>
+    <view class="section-sub">登录后可查看订单状态与进度</view>
+    <view class="empty-box mt-12r"><text class="i i-order inline-icon"></text>你当前处于游客模式</view>
+    <view class="btn mt-12r" bindtap="goLogin"><text class="i i-wechat inline-icon"></text>去登录</view>
+  </view>
+
+  <block wx:else>
+    <view class="card filter-sticky">
+      <view class="section-head">
+        <view class="section-title-wrap">
+          <text class="section-icon i i-order"></text>
+          <view class="section-title section-title-sm">{{roleMode === 'teacher' ? '教员订单' : '家长订单'}}</view>
+        </view>
+        <view class="section-sub">共 {{ list.length }} 条</view>
+      </view>
+      <view class="section-sub mb-8r">{{roleMode === 'parent' ? '包含待接单需求与已生成订单。' : '可推进订单到进行中或完成。'}}</view>
+    </view>
+
+    <view wx:if="{{error}}" class="error-box">
+      {{error}}
+      <view class="btn ghost retry-btn" bindtap="load">重试</view>
+    </view>
+
+    <view wx:if="{{loading}}">
+      <view class="card skeleton-card" wx:for="{{3}}" wx:key="*this">
+        <view class="skeleton line-mid"></view>
+        <view class="skeleton line"></view>
+        <view class="skeleton line short"></view>
+      </view>
+    </view>
+
+    <view wx:elif="{{!list.length}}" class="card">
+      <mp-empty text="暂无订单数据" iconType="i-order" />
+    </view>
+
+    <block wx:else>
+      <view class="card" wx:for="{{list}}" wx:key="id">
+        <view class="row">
+          <view class="order-no"><text class="i i-order inline-icon"></text>{{item.sourceType === 'REQUIREMENT' ? '需求单' : ('订单号: ' + (item.orderNumber || '-'))}}</view>
+          <view class="{{ item.parentOrderStage === 'DONE' || item.orderStatus === 2 ? 'tag success' : item.parentOrderStage === 'CLOSED' || item.orderStatus === 3 ? 'tag error' : item.parentOrderStage === 'IN_SERVICE' || item.orderStatus === 1 ? 'tag info' : 'tag pending' }}">
+            {{item.stageText || item.displayStatusText || '未知'}}
+          </view>
+        </view>
+        <view class="muted amount">金额: {{item.orderAmount || 0}}</view>
+        <view class="muted">交易: {{item.subjectName || '-'}} · 对方: {{item.counterpartyName || '-'}}</view>
+        <view class="muted">需求标题: {{item.requirementTitle || '-'}}</view>
+        <view class="muted">服务地址: {{item.requirementAddress || item.orderAddress || '-'}}</view>
+        <view class="muted">创建时间: {{item.orderCreateTime || item.createTime || '-'}}</view>
+        <view class="muted">支付状态: {{item.payStatus === 1 ? '已支付' : '待支付'}}</view>
+        <view class="status-desc">{{item.displayStatusText || item.stageText || '状态未知'}}</view>
+
+        <view class="action-row">
+          <view wx:if="{{item.sourceType === 'ORDER'}}" class="btn ghost" bindtap="goTimeline" data-id="{{item.id}}">轨迹</view>
+          <view wx:if="{{item.canPay}}" class="btn" bindtap="goPay" data-id="{{item.id}}" data-ordernumber="{{item.orderNumber}}" data-amount="{{item.orderAmount}}">去支付</view>
+          <view wx:if="{{roleMode === 'teacher' && item.sourceType === 'ORDER'}}" class="btn {{ item.canTo1 ? '' : 'disabled' }}" bindtap="updateStatus" data-id="{{item.id}}" data-status="1" data-current="{{item.orderStatus}}">进行中</view>
+          <view wx:if="{{roleMode === 'teacher' && item.sourceType === 'ORDER'}}" class="btn success {{ item.canTo2 ? '' : 'disabled' }}" bindtap="updateStatus" data-id="{{item.id}}" data-status="2" data-current="{{item.orderStatus}}">完成</view>
+          <view wx:if="{{roleMode === 'parent' && item.sourceType === 'ORDER'}}" class="btn secondary {{ item.canTo3 ? '' : 'disabled' }}" bindtap="updateStatus" data-id="{{item.id}}" data-status="3" data-current="{{item.orderStatus}}">取消订单</view>
+          <view wx:if="{{roleMode === 'parent' && item.canCancelRequirement}}" class="btn secondary" bindtap="cancelRequirement" data-id="{{item.requirementId}}">取消需求</view>
+        </view>
+      </view>
+    </block>
+
+    <view wx:if="{{!loading && list.length}}" class="card load-more-card">
+      <view wx:if="{{hasMore}}" class="btn ghost" bindtap="onLoadMore">加载更多</view>
+      <view wx:else class="section-sub">没有更多订单了</view>
+    </view>
+  </block>
+
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+</view>

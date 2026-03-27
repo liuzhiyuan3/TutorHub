@@ -1,0 +1,4 @@
+interface:
+  display_name: "前端全栈UI专家"
+  short_description: "HTML/CSS/JS、Vue/Vite、微信小程序开发与性能优化"
+  default_prompt: "使用此技能完成前端页面开发、交互优化、性能调优和兼容性修复。"

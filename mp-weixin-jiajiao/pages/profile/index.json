@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "个人中心",
+  "usingComponents": {
+    "auth-sheet": "/components/auth-sheet/index",
+    "mp-empty": "/components/mp-empty/index"
+  }
+}

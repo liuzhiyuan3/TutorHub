@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "需求广场",
+  "usingComponents": {
+    "auth-sheet": "/components/auth-sheet/index",
+    "mp-empty": "/components/mp-empty/index"
+  }
+}

@@ -1,0 +1,72 @@
+.register-wrap {
+  padding: 46rpx 28rpx 24rpx;
+}
+
+.register-card {
+  margin-top: 0;
+  padding: 34rpx 28rpx 30rpx;
+}
+
+.register-brand {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  background: #e9f8f0;
+  color: #1f9f59;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.register-title {
+  margin-top: 10rpx;
+  font-size: 42rpx;
+}
+
+.register-sub {
+  margin: 8rpx 0 16rpx;
+}
+
+.group-title {
+  margin: 10rpx 0 10rpx;
+  font-size: 24rpx;
+  color: #547090;
+  font-weight: 600;
+}
+
+.soft-input {
+  background: #f8fbff;
+}
+
+.protocol-row {
+  display: flex;
+  align-items: center;
+  margin: 10rpx 0 18rpx;
+}
+
+.checkbox {
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 10rpx;
+  border: 1rpx solid #bbd1eb;
+  background: #f8fbff;
+  margin-right: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox.checked {
+  border-color: #2caf5c;
+  background: #2caf5c;
+}
+
+.tick {
+  color: #fff;
+  font-size: 22rpx;
+  line-height: 1;
+}
+
+.protocol-text {
+  color: #597495;
+  font-size: 24rpx;
+}

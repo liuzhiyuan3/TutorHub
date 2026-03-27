@@ -1,5 +1,0 @@
-<view class="card" wx:for="{{list}}" wx:key="id" bindtap="goDetail" data-id="{{item.id}}">
-  <view style="font-weight:600;">{{item.teacherIdentity}}</view>
-  <view style="color:#6b7280;margin-top:8rpx;">学校：{{item.teacherSchool || '-'}}｜专业：{{item.teacherMajor || '-'}}</view>
-  <view style="color:#6b7280;">教龄：{{item.teacherTeachingYears}} 年</view>
-</view>

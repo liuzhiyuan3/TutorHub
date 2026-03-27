@@ -1,12 +1,14 @@
 package com.teacher.server.controller;
 
 import com.teacher.common.model.ApiResponse;
-import com.teacher.pojo.entity.RegionEntity;
-import com.teacher.pojo.entity.SchoolEntity;
-import com.teacher.pojo.entity.SubjectEntity;
+import com.teacher.pojo.vo.PublicAdvertisingVO;
+import com.teacher.pojo.vo.PublicOptionVO;
+import com.teacher.pojo.vo.PublicSlideVO;
+import com.teacher.pojo.vo.SubjectCategoryTreeVO;
 import com.teacher.server.service.ContentService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,17 +23,32 @@ public class ContentController {
     }
 
     @GetMapping("/subjects")
-    public ApiResponse<List<SubjectEntity>> subjects() {
-        return ApiResponse.ok(contentService.allSubjects());
+    public ApiResponse<List<PublicOptionVO>> subjects() {
+        return ApiResponse.ok(contentService.publicSubjects());
+    }
+
+    @GetMapping("/subject-categories")
+    public ApiResponse<List<SubjectCategoryTreeVO>> subjectCategories() {
+        return ApiResponse.ok(contentService.publicSubjectCategoryTree());
     }
 
     @GetMapping("/regions")
-    public ApiResponse<List<RegionEntity>> regions() {
-        return ApiResponse.ok(contentService.allRegions());
+    public ApiResponse<List<PublicOptionVO>> regions() {
+        return ApiResponse.ok(contentService.publicRegions());
     }
 
     @GetMapping("/schools")
-    public ApiResponse<List<SchoolEntity>> schools() {
-        return ApiResponse.ok(contentService.allSchools());
+    public ApiResponse<List<PublicOptionVO>> schools() {
+        return ApiResponse.ok(contentService.publicSchools());
+    }
+
+    @GetMapping("/slides")
+    public ApiResponse<List<PublicSlideVO>> slides(@RequestParam(required = false) Integer module) {
+        return ApiResponse.ok(contentService.publicSlides(module));
+    }
+
+    @GetMapping("/advertising")
+    public ApiResponse<List<PublicAdvertisingVO>> advertising(@RequestParam(required = false) String source) {
+        return ApiResponse.ok(contentService.publicAdvertising(source));
     }
 }

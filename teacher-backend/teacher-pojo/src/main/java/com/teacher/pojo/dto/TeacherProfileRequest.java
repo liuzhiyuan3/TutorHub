@@ -14,6 +14,7 @@ public class TeacherProfileRequest {
     private String teacherSchool;
     private String teacherMajor;
     private String teacherEducation;
+    private String teacherPhoto;
     private String teacherExperience;
     private String teacherSelfDescription;
 }

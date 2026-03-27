@@ -1,0 +1,23 @@
+<view wx:if="{{visible}}" class="auth-mask" bindtap="close">
+  <view class="auth-sheet" catchtap="noop">
+    <view class="auth-head">
+      <view class="auth-title">欢迎登录家教平台</view>
+      <view class="auth-sub">{{message || '授权手机号后可发布需求、预约和接单'}}</view>
+    </view>
+    <view wx:if="{{!role}}" class="role-row">
+      <view class="role-item {{userType === 0 ? 'active' : ''}}" bindtap="chooseParent">家长</view>
+      <view class="role-item {{userType === 1 ? 'active' : ''}}" bindtap="chooseTeacher">教员</view>
+    </view>
+    <button
+      class="auth-btn"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onGetPhoneNumber"
+      loading="{{submitting}}"
+      disabled="{{submitting}}"
+    >
+      {{submitting ? '登录中...' : '手机号一键登录'}}
+    </button>
+    <view class="skip-btn" bindtap="close">暂不登录</view>
+    <view class="protocol-tip">登录即代表你已同意《用户协议》与《隐私政策》</view>
+  </view>
+</view>

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "鎵捐€佸笀",
+  "usingComponents": {
+    "mp-empty": "/components/mp-empty/index",
+    "mp-reach-bottom": "/components/mp-reach-bottom/index"
+  }
+}

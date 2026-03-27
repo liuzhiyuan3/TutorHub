@@ -1,0 +1,151 @@
+<view class="page-wrap tab-page profile-page">
+  <view wx:if="{{guestMode}}" class="card guest-card">
+    <view class="section-head">
+      <view class="section-title-wrap">
+        <text class="section-icon i i-profile"></text>
+        <view class="section-title section-title-sm">个人中心</view>
+      </view>
+    </view>
+    <view class="section-sub">登录后可查看资料、订单、收藏与预约数据</view>
+    <mp-empty text="当前为游客模式" iconType="i-profile" />
+    <view class="btn wechat mt-16r" bindtap="goLogin">
+      <text class="i i-wechat inline-icon"></text>立即登录
+    </view>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{error}}" class="error-box">
+      {{error}}
+      <view class="btn ghost retry-btn" bindtap="load">重试</view>
+    </view>
+
+    <view class="card" wx:if="{{loading}}">
+      <view class="skeleton line-short"></view>
+      <view class="skeleton line"></view>
+      <view class="skeleton line short"></view>
+    </view>
+
+    <block wx:else>
+      <view class="card profile-main-card">
+        <view class="profile-main-top">
+          <view class="profile-user-row">
+            <image class="portrait-img" src="{{user.userPortrait || '/static/imgDefault.png'}}" mode="aspectFill" binderror="onUserPortraitError"></image>
+            <view class="profile-user-meta">
+              <view class="profile-user-name">{{user.userName || '未设置昵称'}}</view>
+              <view class="profile-user-account">{{user.userAccount || '-'}}</view>
+            </view>
+          </view>
+          <view class="tag info role-tag">{{user.userType === 1 ? '教员' : '家长'}}</view>
+        </view>
+
+        <view class="profile-info-grid">
+          <view class="info-cell">
+            <view class="info-cell-label">手机号</view>
+            <view class="info-cell-value">{{user.userPhone || '-'}}</view>
+          </view>
+          <view class="info-cell">
+            <view class="info-cell-label">当前地区</view>
+            <view class="info-cell-value">{{currentRegionText}}</view>
+          </view>
+          <view class="info-cell info-cell-wide">
+            <view class="info-cell-label">我的位置</view>
+            <view class="info-cell-value">{{user.userLocationAddress || '未设置'}}</view>
+          </view>
+        </view>
+
+        <view class="profile-actions-row">
+          <van-button plain type="primary" custom-class="upload-btn" loading="{{portraitUploading}}" bind:click="chooseUserPortrait">
+            {{portraitUploading ? '上传中...' : '上传头像'}}
+          </van-button>
+          <van-button plain type="primary" custom-class="row-action-btn" loading="{{locationUpdating}}" bind:click="updateMyLocation">
+            {{locationUpdating ? '更新中...' : '更新位置'}}
+          </van-button>
+          <van-button plain type="primary" custom-class="row-action-btn" bind:click="viewMyLocation">地图查看</van-button>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="section-head">
+          <view class="section-title-wrap">
+            <text class="section-icon i i-menu"></text>
+            <view class="section-title section-title-sm">我的统计</view>
+          </view>
+          <view class="section-sub">常用数据</view>
+        </view>
+        <view class="stat-grid">
+          <view class="stat-item">
+            <view class="stat-num">{{stats.favoriteCount}}</view>
+            <view class="stat-label">我的收藏</view>
+          </view>
+          <view class="stat-item">
+            <view class="stat-num">{{stats.appointmentCount}}</view>
+            <view class="stat-label">我的预约</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="card">
+        <view class="section-head">
+          <view class="section-title-wrap">
+            <text class="section-icon i i-home"></text>
+            <view class="section-title section-title-sm">常用入口</view>
+          </view>
+          <view class="section-sub">快捷操作</view>
+        </view>
+
+        <view class="quick-grid" wx:if="{{roleMode === 'parent'}}">
+          <view class="quick-item" bindtap="goTeachers"><text class="i i-search quick-icon"></text><view class="quick-text">挑老师</view></view>
+          <view class="quick-item" bindtap="goRequirementCreate"><text class="i i-requirement quick-icon"></text><view class="quick-text">发布需求</view></view>
+          <view class="quick-item" bindtap="goOrders"><text class="i i-order quick-icon"></text><view class="quick-text">我的订单</view></view>
+        </view>
+
+        <view class="quick-grid" wx:elif="{{roleMode === 'teacher'}}">
+          <view class="quick-item" bindtap="goRequirements"><text class="i i-requirement quick-icon"></text><view class="quick-text">接单列表</view></view>
+          <view class="quick-item" bindtap="goOrders"><text class="i i-order quick-icon"></text><view class="quick-text">我的订单</view></view>
+          <view class="quick-item" bindtap="goTeachers"><text class="i i-search quick-icon"></text><view class="quick-text">教员名录</view></view>
+        </view>
+      </view>
+
+      <view class="card" wx:if="{{user.userType === 1}}">
+        <view class="section-head">
+          <view class="section-title-wrap">
+            <text class="section-icon i i-profile"></text>
+            <view class="section-title section-title-sm">教员资料摘要</view>
+          </view>
+          <view class="{{teacherTagClass}}">{{teacherAuditText}}</view>
+        </view>
+        <view class="teacher-summary-row">
+          <image wx:if="{{teacher.teacherPhoto}}" class="teacher-photo" src="{{teacher.teacherPhoto}}" mode="aspectFill" binderror="onTeacherPhotoError"></image>
+          <view wx:else class="portrait-placeholder">暂无照片</view>
+          <view class="teacher-summary-main">
+            <view class="teacher-summary-title">{{teacher.teacherIdentity || '未填写教员身份'}}</view>
+            <view class="teacher-summary-sub">{{teacher.teacherSchool || '未填写学校'}} {{teacher.teacherMajor || ''}}</view>
+            <view class="teacher-summary-sub">教龄：{{teacher.teacherTeachingYears || 0}} 年</view>
+          </view>
+        </view>
+        <view class="section-sub">{{teacherActionHint}}</view>
+        <van-button plain type="primary" custom-class="panel-action-btn wide-gap" bind:click="goTeacherProfileEdit">{{teacherActionText}}</van-button>
+      </view>
+
+      <view class="card danger-card">
+        <view class="section-head">
+          <view class="section-title-wrap">
+            <text class="section-icon i i-menu"></text>
+            <view class="section-title section-title-sm">账号设置</view>
+          </view>
+        </view>
+        <view class="profile-danger-row wide-gap">
+          <van-button plain type="primary" custom-class="profile-danger-inline-btn" bind:click="switchIdentity">切换身份</van-button>
+          <van-button type="danger" custom-class="profile-danger-inline-btn profile-danger-inline-btn--danger" bind:click="logout">退出登录</van-button>
+        </view>
+      </view>
+    </block>
+  </block>
+
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+</view>

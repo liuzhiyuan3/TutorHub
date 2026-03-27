@@ -1,15 +1,19 @@
 com\teacher\server\mapper\FavoriteTeacherMapper.class
 com\teacher\server\controller\ContentController.class
+com\teacher\server\mapper\SubjectCategoryMapper.class
 com\teacher\server\config\MapperScanConfig.class
 com\teacher\server\controller\admin\AdminBusinessController.class
 com\teacher\server\mapper\DictionaryContentMapper.class
 com\teacher\server\mapper\RequirementMapper.class
+com\teacher\server\service\StatsService.class
+com\teacher\server\controller\FileController.class
 com\teacher\server\mapper\SlideMapper.class
 com\teacher\server\mapper\DictionaryMapper.class
 com\teacher\server\service\RequirementService.class
 com\teacher\server\controller\RequirementController.class
 com\teacher\server\service\AuthService.class
 com\teacher\server\controller\admin\AdminStatsController.class
+com\teacher\server\controller\HomeController.class
 com\teacher\server\service\TeacherTeachingService.class
 com\teacher\server\controller\OrderController.class
 com\teacher\server\controller\admin\AdminContentController.class
@@ -17,6 +21,7 @@ com\teacher\server\mapper\AppointmentMapper.class
 com\teacher\server\controller\admin\AdminOrderController.class
 com\teacher\server\config\MybatisPlusConfig.class
 com\teacher\server\mapper\OrderMapper.class
+com\teacher\server\config\WechatProperties.class
 com\teacher\server\controller\admin\AdminSystemController.class
 com\teacher\server\mapper\SchoolMapper.class
 com\teacher\server\service\UserService.class
@@ -27,6 +32,8 @@ com\teacher\server\mapper\AdminMapper.class
 com\teacher\server\mapper\RoleMenuMapper.class
 com\teacher\server\service\OrderService.class
 com\teacher\server\controller\admin\AdminTeacherController.class
+com\teacher\server\service\HomeQueryService.class
+com\teacher\server\service\OssStorageService.class
 com\teacher\server\mapper\TeacherRegionMapper.class
 com\teacher\server\controller\TeacherTeachingController.class
 com\teacher\server\mapper\TeacherAuditMapper.class
@@ -34,8 +41,10 @@ com\teacher\server\TeacherServerApplication.class
 com\teacher\server\controller\FavoriteTeacherController.class
 com\teacher\server\controller\AppointmentController.class
 com\teacher\server\mapper\AdvertisingMapper.class
+com\teacher\server\service\TeacherOrderStatsService$TeacherOrderStats.class
 com\teacher\server\service\ExtendedBusinessService.class
 com\teacher\server\service\TeacherService.class
+com\teacher\server\config\OssProperties.class
 com\teacher\server\controller\AuthController.class
 com\teacher\server\mapper\MenuMapper.class
 com\teacher\server\mapper\RegionMapper.class
@@ -49,6 +58,7 @@ com\teacher\server\mapper\TeacherSuccessRecordMapper.class
 com\teacher\server\security\AdminAuthInterceptor.class
 com\teacher\server\controller\UserController.class
 com\teacher\server\mapper\RoleMapper.class
+com\teacher\server\service\TeacherOrderStatsService.class
 com\teacher\server\config\SecurityConfig.class
 com\teacher\server\mapper\TeacherSubjectMapper.class
 com\teacher\server\controller\admin\AdminRequirementController.class

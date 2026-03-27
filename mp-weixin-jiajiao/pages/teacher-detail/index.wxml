@@ -1,0 +1,92 @@
+<view class="page-wrap">
+  <view wx:if="{{error}}" class="error-box">
+    {{error}}
+    <view class="btn ghost retry-btn" bindtap="load">重试</view>
+  </view>
+
+  <view wx:if="{{loading}}">
+    <view class="card">
+      <view class="skeleton line-short"></view>
+      <view class="skeleton line"></view>
+      <view class="skeleton line"></view>
+      <view class="skeleton line short"></view>
+    </view>
+  </view>
+
+  <view wx:elif="{{!teacher}}" class="card">
+    <view class="empty-box">暂无教员详情</view>
+  </view>
+
+  <view wx:else class="card detail-card">
+    <view class="profile-head">
+      <view class="profile-avatar-wrap">
+        <image
+          wx:if="{{teacher.teacherPhoto && !teacherPhotoError}}"
+          class="teacher-photo"
+          src="{{teacher.teacherPhoto}}"
+          mode="aspectFill"
+          binderror="onTeacherPhotoError"
+        ></image>
+        <view wx:else class="teacher-photo-placeholder">暂无教员照片</view>
+      </view>
+      <view class="profile-main">
+        <view class="section-title section-title-sm">{{teacher.userName || teacher.teacherIdentity || '教员详情'}}</view>
+        <view class="tag info">{{teacher.teacherTeachingYears || 0}} 年教龄</view>
+        <view class="line-text">身份：{{teacher.teacherIdentity || '-'}}</view>
+        <view class="line-text">学校：{{teacher.teacherSchool || '-'}}</view>
+        <view class="line-text">专业：{{teacher.teacherMajor || '-'}}</view>
+      </view>
+    </view>
+    <view class="line-text">学历：{{teacher.teacherEducation || '-'}}</view>
+    <view class="line-text">授课方式：{{methodText}}</view>
+    <view class="line-text">可授科目：{{subjectText}}</view>
+    <view class="line-text">服务区域：{{regionText}}</view>
+    <view class="line-text">历史成交量：{{teacher.historyDealCount || 0}}</view>
+    <view class="line-text">被录用次数：{{teacher.hireCount || 0}}</view>
+    <view class="line-text">成功次数：{{teacher.teacherSuccessCount || 0}}</view>
+    <view class="line-text">浏览次数：{{teacher.teacherViewCount || 0}}</view>
+    <view class="desc-title">自我介绍</view>
+    <view class="desc">{{teacher.teacherSelfDescription || '暂无个人介绍'}}</view>
+    <view class="desc-title">教学经历</view>
+    <view class="desc">{{teacher.teacherExperience || '暂无教学经历'}}</view>
+
+    <view class="desc-title">成功记录</view>
+    <view wx:if="{{successRecords.length}}">
+      <view class="record-row" wx:for="{{successRecords}}" wx:key="index">
+        <view class="record-grade">{{item.successGrade || '-'}}</view>
+        <view class="record-date">{{item.successOrderDate || '-'}}</view>
+      </view>
+    </view>
+    <view wx:else class="empty-box">暂无成功记录</view>
+  </view>
+
+  <view class="bottom-ops" wx:if="{{!loading && teacher}}">
+    <view class="btn ghost" bindtap="onReserve">我要预约</view>
+    <view class="btn" bindtap="onFavorite">{{ favoriteLoading ? '处理中...' : (favoriteAdded ? '取消备选' : '加入备选') }}</view>
+    <view class="btn secondary" open-type="share">分享</view>
+  </view>
+
+  <view wx:if="{{reservePanelVisible}}" class="card reserve-panel">
+    <view class="section-title section-title-sm">预约教员</view>
+    <input class="input" placeholder="预约科目" value="{{reserveForm.appointmentSubject}}" data-key="appointmentSubject" bindinput="onReserveInput" />
+    <input class="input" placeholder="预约年级" value="{{reserveForm.appointmentGrade}}" data-key="appointmentGrade" bindinput="onReserveInput" />
+    <input class="input" placeholder="预约地址" value="{{reserveForm.appointmentAddress}}" data-key="appointmentAddress" bindinput="onReserveInput" />
+    <picker mode="date" value="{{reserveForm.appointmentDate}}" bindchange="onReserveDateChange">
+      <view class="picker-field">预约日期：{{reserveForm.appointmentDate || '请选择'}}</view>
+    </picker>
+    <picker mode="time" value="{{reserveForm.appointmentTimeText}}" bindchange="onReserveTimeChange">
+      <view class="picker-field">预约时间：{{reserveForm.appointmentTimeText}}</view>
+    </picker>
+    <textarea class="input" placeholder="备注（可选）" value="{{reserveForm.appointmentRemark}}" data-key="appointmentRemark" bindinput="onReserveInput" />
+    <view class="ops">
+      <view class="btn secondary" bindtap="closeReservePanel">取消</view>
+      <view class="btn {{reserveLoading ? 'disabled' : ''}}" bindtap="submitReserve">{{reserveLoading ? '提交中...' : '提交预约'}}</view>
+    </view>
+  </view>
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+</view>

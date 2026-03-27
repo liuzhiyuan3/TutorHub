@@ -1,0 +1,183 @@
+﻿<view class="page-wrap">
+  <view class="card">
+    <view class="section-head">
+      <view class="section-title section-title-sm">发布家教需求</view>
+      <view class="section-sub">带 * 为必填项</view>
+    </view>
+
+    <view class="section-sub">基础信息</view>
+    <van-field
+      required
+      label="标题"
+      placeholder="请输入需求标题"
+      value="{{form.requirementTitle}}"
+      data-key="requirementTitle"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <van-field
+      required
+      type="textarea"
+      autosize
+      label="描述"
+      placeholder="教学目标、学习情况等"
+      value="{{form.requirementDescription}}"
+      data-key="requirementDescription"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+
+    <view class="section-sub">教学偏好</view>
+    <picker mode="selector" range="{{subjects}}" range-key="name" bindchange="onSubjectChange">
+      <view class="picker-field">* 学科：{{subjects[subjectIndex] ? subjects[subjectIndex].name : '请选择'}}</view>
+    </picker>
+    <picker mode="selector" range="{{regions}}" range-key="name" bindchange="onRegionChange">
+      <view class="picker-field">* 区域：{{regions[regionIndex] ? regions[regionIndex].name : '请选择'}}</view>
+    </picker>
+
+    <van-field
+      required
+      label="年级"
+      placeholder="例如小学四年级"
+      value="{{form.requirementGrade}}"
+      data-key="requirementGrade"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <van-field
+      required
+      label="地址"
+      placeholder="请输入授课地址"
+      value="{{form.requirementAddress}}"
+      data-key="requirementAddress"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <view class="location-row">
+      <van-button size="small" type="primary" plain custom-class="location-btn" bind:click="openLocationSheet">定位填写地址</van-button>
+      <view class="location-tip" wx:if="{{form.requirementLongitude && form.requirementLatitude}}">
+        已定位：{{form.requirementLongitude}}, {{form.requirementLatitude}}
+      </view>
+    </view>
+    <van-field
+      required
+      type="digit"
+      label="薪资"
+      placeholder="元/小时"
+      value="{{form.requirementSalary}}"
+      data-key="requirementSalary"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <van-field
+      label="费用展示"
+      placeholder="例如220到230元2小时协商"
+      value="{{form.salaryText}}"
+      data-key="salaryText"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <view class="salary-wrap">
+      <view class="section-sub">快捷薪资</view>
+      <view class="chip-wrap">
+        <view class="chip" wx:for="{{salarySuggest}}" wx:key="*this" data-value="{{item}}" bindtap="onPickSalary">
+          {{item}}/小时
+        </view>
+      </view>
+    </view>
+
+    <picker mode="selector" range="{{methodOptions}}" range-key="label" bindchange="onMethodChange">
+      <view class="picker-field">授课方式：{{methodOptions[methodIndex].label}}</view>
+    </picker>
+    <picker mode="selector" range="{{studentGenderOptions}}" bindchange="onStudentGenderChange">
+      <view class="picker-field">学员性别：{{studentGenderOptions[studentGenderIndex]}}</view>
+    </picker>
+    <van-field
+      label="交叉路口"
+      placeholder="例如东方花园三期32号"
+      value="{{form.crossStreet}}"
+      data-key="crossStreet"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <van-field
+      type="textarea"
+      autosize
+      label="学员详情"
+      placeholder="例如：初二女生，补习数学，寒假时间协商，一周一到两次"
+      value="{{form.studentDetail}}"
+      data-key="studentDetail"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+
+    <view class="section-sub">教员要求</view>
+    <van-field
+      label="教员资质"
+      placeholder="例如大学生/研究生/专职教师"
+      value="{{form.teacherQualification}}"
+      data-key="teacherQualification"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <picker mode="selector" range="{{teacherGenderOptions}}" bindchange="onTeacherGenderChange">
+      <view class="picker-field">教员性别：{{teacherGenderOptions[teacherGenderIndex]}}</view>
+    </picker>
+    <van-field
+      type="textarea"
+      autosize
+      label="文字要求"
+      placeholder="例如数学好、有经验，优先上海或江浙籍"
+      value="{{form.teacherRequirementText}}"
+      data-key="teacherRequirementText"
+      border="{{false}}"
+      custom-class="van-field-lite"
+      bind:input="onInput"
+    />
+    <view class="upload-wrap">
+      <view class="upload-head">
+        <view class="section-sub">需求配图（最多6张）</view>
+        <van-button size="small" plain type="primary" custom-class="upload-btn" bind:click="chooseImages">{{uploadingImages ? '上传中...' : '选择图片'}}</van-button>
+      </view>
+      <view wx:if="{{requirementImages.length}}" class="img-grid">
+        <view class="img-item" wx:for="{{requirementImages}}" wx:key="*this">
+          <image class="img-preview" src="{{item}}" mode="aspectFill"></image>
+          <view class="img-remove" data-index="{{index}}" bindtap="removeImage">删除</view>
+        </view>
+      </view>
+      <view wx:else class="section-sub">未上传图片</view>
+    </view>
+
+    <view wx:if="{{metaError}}" class="error-box">
+      {{metaError}}
+      <view class="btn ghost retry-btn" bindtap="loadMeta">重试加载字典</view>
+    </view>
+    <van-button type="primary" loading="{{submitting}}" custom-class="submit-btn" bind:click="submit">{{ submitting ? '提交中...' : '提交需求' }}</van-button>
+  </view>
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+  <van-popup show="{{locationSheetVisible}}" position="bottom" round bind:close="closeLocationSheet">
+    <view class="sheet-body">
+      <view class="sheet-head">
+        <view class="sheet-title">地址定位</view>
+        <view class="sheet-close" bindtap="closeLocationSheet">关闭</view>
+      </view>
+      <van-button type="primary" loading="{{locating}}" custom-class="sheet-btn" bind:click="useCurrentLocation">使用当前位置</van-button>
+      <van-button plain type="primary" custom-class="sheet-btn ghost-gap" bind:click="chooseLocationOnMap">地图手动选点</van-button>
+      <view class="section-sub sheet-tip">建议先定位再微调具体门牌号</view>
+    </view>
+  </van-popup>
+</view>

@@ -25,4 +25,10 @@ public class FavoriteTeacherController {
                                                                  @RequestParam(defaultValue = "10") long pageSize) {
         return ApiResponse.ok(extendedBusinessService.myFavorites(pageNo, pageSize));
     }
+
+    @DeleteMapping("/{teacherId}")
+    public ApiResponse<Void> remove(@PathVariable String teacherId) {
+        extendedBusinessService.removeFavorite(teacherId);
+        return ApiResponse.ok();
+    }
 }

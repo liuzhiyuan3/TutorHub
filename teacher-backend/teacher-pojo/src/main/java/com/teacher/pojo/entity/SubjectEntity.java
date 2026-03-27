@@ -13,6 +13,7 @@ public class SubjectEntity {
     private String id;
     private String subjectName;
     private String subjectCode;
+    private String subjectCategoryId;
     private String subjectCategory;
     private String subjectDescription;
     private Integer subjectSort;

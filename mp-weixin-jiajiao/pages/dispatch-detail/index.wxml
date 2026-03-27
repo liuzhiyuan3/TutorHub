@@ -1,0 +1,42 @@
+<view class="page-wrap">
+  <view wx:if="{{error}}" class="error-box">
+    {{error}}
+    <view class="btn ghost retry-btn" bindtap="load">重试</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="card">
+    <view class="skeleton"></view>
+    <view class="skeleton line"></view>
+    <view class="skeleton line short"></view>
+  </view>
+
+  <view wx:elif="{{detail}}" class="card detail-card">
+    <view class="row-first">
+      <text class="label">订单编号：</text>
+      <text class="value">{{detail.orderNumber || '-'}}</text>
+    </view>
+
+    <view class="line-row">
+      <text class="label">求教科目：</text>
+      <text class="pill">{{detail.requirementGrade || ''}} {{detail.subjectName || '-'}}</text>
+    </view>
+    <view class="line-row"><text class="label">学员性别：</text><text class="value">{{detail.studentGender || '-'}}</text></view>
+    <view class="line-row"><text class="label">家教费用：</text><text class="value">{{detail.salaryText || '-'}}</text></view>
+    <view class="line-row"><text class="label">授课区域：</text><text class="value">{{detail.regionName || '-'}}</text></view>
+    <view class="line-row"><text class="label">授课地址：</text><text class="value">{{detail.requirementAddress || '-'}}</text></view>
+    <view class="line-row"><text class="label">交叉路口：</text><text class="value">{{detail.crossStreet || '-'}}</text></view>
+    <view class="line-row"><text class="label">授课时间：</text><text class="value">{{detail.requirementFrequency || '-'}}</text></view>
+    <view class="line-row"><text class="label">学员详情：</text><text class="value multi">{{detail.studentDetail || '-'}}</text></view>
+
+    <view class="section-title">教员要求</view>
+    <view class="line-row"><text class="label">教员资质：</text><text class="value">{{detail.teacherQualification || '-'}}</text></view>
+    <view class="line-row"><text class="label">辅导方式：</text><text class="value">{{detail.requirementTutoringMethodText || '-'}}</text></view>
+    <view class="line-row"><text class="label">教员性别：</text><text class="value">{{detail.teacherGenderPreference || '-'}}</text></view>
+    <view class="line-row"><text class="label">教员要求：</text><text class="value multi">{{detail.teacherRequirementText || '-'}}</text></view>
+
+    <view wx:if="{{!detail.fullVisible}}" class="mask-tip">
+      当前为游客视角，已做脱敏处理。
+      <view class="btn" bindtap="goLogin">登录后查看完整详情</view>
+    </view>
+  </view>
+</view>
