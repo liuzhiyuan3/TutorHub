@@ -1,23 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../views/LoginView.vue'
 import MainLayout from '../layout/MainLayout.vue'
-import DashboardView from '../views/DashboardView.vue'
-import UsersView from '../views/UsersView.vue'
-import TeacherAuditView from '../views/TeacherAuditView.vue'
-import RequirementsView from '../views/RequirementsView.vue'
-import OrdersView from '../views/OrdersView.vue'
-import SubjectsView from '../views/SubjectsView.vue'
-import SubjectCategoriesView from '../views/SubjectCategoriesView.vue'
-import SchoolsView from '../views/SchoolsView.vue'
-import RegionsView from '../views/RegionsView.vue'
-import RolesView from '../views/RolesView.vue'
-import MenusView from '../views/MenusView.vue'
-import RoleMenusView from '../views/RoleMenusView.vue'
-import DictionariesView from '../views/DictionariesView.vue'
-import SlidesView from '../views/SlidesView.vue'
-import AdvertisingsView from '../views/AdvertisingsView.vue'
-import StatsView from '../views/StatsView.vue'
 import { bootstrapAdminSession, clearAdminSession } from '../stores/adminSession'
+
+const LoginView = () => import('../views/LoginView.vue')
+const DashboardView = () => import('../views/DashboardView.vue')
+const UsersView = () => import('../views/UsersView.vue')
+const TeacherAuditView = () => import('../views/TeacherAuditView.vue')
+const RequirementsView = () => import('../views/RequirementsView.vue')
+const OrdersView = () => import('../views/OrdersView.vue')
+const SubjectsView = () => import('../views/SubjectsView.vue')
+const SubjectCategoriesView = () => import('../views/SubjectCategoriesView.vue')
+const SchoolsView = () => import('../views/SchoolsView.vue')
+const RegionsView = () => import('../views/RegionsView.vue')
+const RolesView = () => import('../views/RolesView.vue')
+const MenusView = () => import('../views/MenusView.vue')
+const RoleMenusView = () => import('../views/RoleMenusView.vue')
+const DictionariesView = () => import('../views/DictionariesView.vue')
+const SlidesView = () => import('../views/SlidesView.vue')
+const AdvertisingsView = () => import('../views/AdvertisingsView.vue')
+const StatsView = () => import('../views/StatsView.vue')
 
 const router = createRouter({
   history: createWebHistory(),

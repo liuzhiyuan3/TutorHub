@@ -1,11 +1,11 @@
 ﻿<view class="page-wrap">
   <view class="card">
-    <view class="section-head">
+    <view class="section-head publish-head">
       <view class="section-title section-title-sm">发布家教需求</view>
       <view class="section-sub">带 * 为必填项</view>
     </view>
 
-    <view class="section-sub">基础信息</view>
+    <view class="section-sub group-title">基础信息</view>
     <van-field
       required
       label="标题"
@@ -29,7 +29,7 @@
       bind:input="onInput"
     />
 
-    <view class="section-sub">教学偏好</view>
+    <view class="section-sub group-title">教学偏好</view>
     <picker mode="selector" range="{{subjects}}" range-key="name" bindchange="onSubjectChange">
       <view class="picker-field">* 学科：{{subjects[subjectIndex] ? subjects[subjectIndex].name : '请选择'}}</view>
     </picker>
@@ -62,6 +62,10 @@
       <view class="location-tip" wx:if="{{form.requirementLongitude && form.requirementLatitude}}">
         已定位：{{form.requirementLongitude}}, {{form.requirementLatitude}}
       </view>
+      <view wx:if="{{locationStatusText}}" class="location-status {{locationStatusType === 'success' ? 'ok' : 'error'}}">
+        {{locationStatusText}}
+      </view>
+      <view class="field-note">建议先定位，再手动补充门牌号与楼栋信息</view>
     </view>
     <van-field
       required
@@ -84,7 +88,7 @@
       bind:input="onInput"
     />
     <view class="salary-wrap">
-      <view class="section-sub">快捷薪资</view>
+      <view class="section-sub group-title">快捷薪资</view>
       <view class="chip-wrap">
         <view class="chip" wx:for="{{salarySuggest}}" wx:key="*this" data-value="{{item}}" bindtap="onPickSalary">
           {{item}}/小时
@@ -119,7 +123,7 @@
       bind:input="onInput"
     />
 
-    <view class="section-sub">教员要求</view>
+    <view class="section-sub group-title">教员要求</view>
     <van-field
       label="教员资质"
       placeholder="例如大学生/研究生/专职教师"
@@ -146,7 +150,7 @@
     <view class="upload-wrap">
       <view class="upload-head">
         <view class="section-sub">需求配图（最多6张）</view>
-        <van-button size="small" plain type="primary" custom-class="upload-btn" bind:click="chooseImages">{{uploadingImages ? '上传中...' : '选择图片'}}</van-button>
+        <van-button size="small" plain type="primary" custom-class="upload-btn" loading="{{uploadingImages}}" disabled="{{uploadingImages || submitting}}" bind:click="chooseImages">{{uploadingImages ? '上传中...' : '选择图片'}}</van-button>
       </view>
       <view wx:if="{{requirementImages.length}}" class="img-grid">
         <view class="img-item" wx:for="{{requirementImages}}" wx:key="*this">
@@ -161,7 +165,7 @@
       {{metaError}}
       <view class="btn ghost retry-btn" bindtap="loadMeta">重试加载字典</view>
     </view>
-    <van-button type="primary" loading="{{submitting}}" custom-class="submit-btn" bind:click="submit">{{ submitting ? '提交中...' : '提交需求' }}</van-button>
+    <van-button type="primary" loading="{{submitting}}" disabled="{{submitting || uploadingImages}}" custom-class="submit-btn" bind:click="submit">{{ submitting ? '提交中...' : '提交需求' }}</van-button>
   </view>
   <auth-sheet
     visible="{{authSheetVisible}}"

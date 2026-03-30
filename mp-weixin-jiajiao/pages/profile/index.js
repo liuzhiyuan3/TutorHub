@@ -9,7 +9,7 @@ const {
   toLocationErrorMessage
 } = require('../../utils/location')
 const globalStore = require('../../utils/global-store')
-const { resolveRegionWithFallback, toFallbackMessage } = require('../../utils/location-service')
+const { resolveRegionWithFallback, resolveRegionSmart, toFallbackMessage } = require('../../utils/location-service')
 const sessionState = require('../../utils/session-state')
 
 const LEGACY_BROKEN_AVATAR_PREFIX = 'https://mmbiz.qpic.cn/mmbiz/icTDbqWNOwNRna42FI242Lcia07jQodd2FJc8qfQ7Aiaf6v0Owr4KJ6SJ6VQkPqP5wM5v5v6fR5bLJ6f8uQ94m4A'
@@ -127,7 +127,7 @@ Page({
 
   async refreshRegionOnShow() {
     try {
-      const resolved = await resolveRegionWithFallback()
+      const resolved = await resolveRegionSmart()
       globalStore.setRegion(resolved)
     } catch (e) {
       // ignore: location fallback already handled in service
@@ -350,7 +350,7 @@ Page({
   },
 
   async syncRegionFromPosition(pos, savedAddress) {
-    const resolved = await resolveRegionWithFallback()
+    const resolved = await resolveRegionSmart({ forceRefresh: true })
     globalStore.setRegion(resolved)
     await authService.updateUserRegion({
       regionCode: resolved.regionCode || '',

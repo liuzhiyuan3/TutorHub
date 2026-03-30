@@ -55,8 +55,12 @@ onMounted(load)
 <template>
   <div class="page-block">
     <h3 class="section-title">统计看板</h3>
-    <p class="section-subtitle">支持按时间范围查看总览、趋势与区域分布</p>
+    <p class="section-subtitle">按时间范围查看总览、趋势与区域分布</p>
     <div class="panel panel-mt-12">
+      <div class="panel-head">
+        <strong>筛选条件</strong>
+        <span class="table-meta">当前 {{ rangeDays }} 天</span>
+      </div>
       <div class="panel-body">
         <div class="toolbar toolbar-no-bottom">
           <select v-model.number="rangeDays" class="select col-span-2">
@@ -69,7 +73,7 @@ onMounted(load)
       </div>
     </div>
 
-    <div class="cards">
+    <div class="cards panel-mt-12">
       <div class="card stat-card">
         <p>总用户数</p>
         <h2>{{ loading ? '...' : overview.userTotal ?? 0 }}</h2>
@@ -114,33 +118,37 @@ onMounted(load)
 
     <div class="card panel">
       <h4>趋势数据</h4>
-      <table class="table">
-        <thead><tr><th>日期</th><th>新增需求</th><th>新增订单</th></tr></thead>
-        <tbody>
-          <tr v-if="loading"><td colspan="3"><span class="skeleton" /></td></tr>
-          <tr v-for="item in trendList" :key="item.date">
-            <td>{{ item.date }}</td>
-            <td>{{ item.requirementCount ?? 0 }}</td>
-            <td>{{ item.orderCount ?? 0 }}</td>
-          </tr>
-          <tr v-if="!loading && !trendList.length"><td colspan="3"><div class="empty-state">暂无趋势数据</div></td></tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>日期</th><th>新增需求</th><th>新增订单</th></tr></thead>
+          <tbody>
+            <tr v-if="loading"><td colspan="3"><span class="skeleton" /></td></tr>
+            <tr v-for="item in trendList" :key="item.date">
+              <td>{{ item.date }}</td>
+              <td>{{ item.requirementCount ?? 0 }}</td>
+              <td>{{ item.orderCount ?? 0 }}</td>
+            </tr>
+            <tr v-if="!loading && !trendList.length"><td colspan="3"><div class="empty-state">暂无趋势数据</div></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="card panel">
       <h4>区域分布</h4>
-      <table class="table">
-        <thead><tr><th>区域</th><th>数量</th></tr></thead>
-        <tbody>
-          <tr v-if="loading"><td colspan="2"><span class="skeleton" /></td></tr>
-          <tr v-for="item in regionList" :key="item.regionName">
-            <td>{{ item.regionName || '-' }}</td>
-            <td>{{ item.requirementCount ?? 0 }}</td>
-          </tr>
-          <tr v-if="!loading && !regionList.length"><td colspan="2"><div class="empty-state">暂无区域分布数据</div></td></tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>区域</th><th>数量</th></tr></thead>
+          <tbody>
+            <tr v-if="loading"><td colspan="2"><span class="skeleton" /></td></tr>
+            <tr v-for="item in regionList" :key="item.regionName">
+              <td>{{ item.regionName || '-' }}</td>
+              <td>{{ item.requirementCount ?? 0 }}</td>
+            </tr>
+            <tr v-if="!loading && !regionList.length"><td colspan="2"><div class="empty-state">暂无区域分布数据</div></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>

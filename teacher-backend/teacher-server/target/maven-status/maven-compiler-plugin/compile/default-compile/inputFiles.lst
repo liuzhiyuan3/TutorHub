@@ -1,3 +1,4 @@
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\AmapProperties.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\MapperScanConfig.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\MybatisPlusConfig.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\config\OssProperties.java
@@ -57,6 +58,7 @@ D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\ExtendedBusinessService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\HomeQueryService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\LocationService.java
+D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\MediaUrlService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\MockPayService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\OrderService.java
 D:\java\Teacher\teacher-backend\teacher-server\src\main\java\com\teacher\server\service\OssStorageService.java

@@ -49,10 +49,11 @@ public class HomeController {
             @RequestParam(required = false) Integer maxTeachingYears,
             @RequestParam(required = false) BigDecimal userLat,
             @RequestParam(required = false) BigDecimal userLng,
+            @RequestParam(required = false) BigDecimal maxDistanceKm,
             @RequestParam(defaultValue = "hot") String sortBy) {
         return ApiResponse.ok(homeQueryService.teacherSearch(
                 pageNo, pageSize, subjectId, regionId, tutoringMethod, auditStatus, keyword,
-                schoolKeyword, minTeachingYears, maxTeachingYears, userLat, userLng, sortBy));
+                schoolKeyword, minTeachingYears, maxTeachingYears, userLat, userLng, maxDistanceKm, sortBy));
     }
 
     @GetMapping("/requirements/search")

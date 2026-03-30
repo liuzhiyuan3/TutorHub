@@ -196,8 +196,16 @@ public class RequirementService {
         if (db == null || db.getRequirementDeleteStatus() == 1) {
             throw new BusinessException("Requirement not found");
         }
+        if (db.getRequirementAuditStatus() != null && db.getRequirementAuditStatus() != AuditStatusEnum.PENDING.getCode()) {
+            throw new BusinessException("Requirement has been audited already");
+        }
         if (request.getAuditStatus() != null && request.getAuditStatus() == AuditStatusEnum.PENDING.getCode()) {
             throw new BusinessException("Invalid audit status");
+        }
+        if (request.getAuditStatus() != null
+                && request.getAuditStatus() == AuditStatusEnum.REJECTED.getCode()
+                && (request.getReason() == null || request.getReason().isBlank())) {
+            throw new BusinessException("Reject reason is required");
         }
         db.setRequirementAuditStatus(request.getAuditStatus());
         db.setUpdateTime(LocalDateTime.now());

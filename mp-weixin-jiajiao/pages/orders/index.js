@@ -23,6 +23,24 @@ Page({
     authSheetRole: ''
   },
 
+  normalizeTextStatus(text, fallback) {
+    const raw = String(text || '').trim()
+    if (!raw) return fallback
+    const map = {
+      WAITING: '待接单',
+      WAITING_CONFIRM: '待确认',
+      IN_PROGRESS: '进行中',
+      FINISHED: '已完成',
+      CANCELED: '已取消',
+      IN_SERVICE: '服务中',
+      DONE: '已完成',
+      CLOSED: '已关闭',
+      PAID: '已支付',
+      UNPAID: '待支付'
+    }
+    return map[raw] || raw
+  },
+
   onShow() {
     const state = getLoginState()
     const roleMode = getRoleMode()
@@ -51,9 +69,9 @@ Page({
         ...item,
         id: entityId,
         sourceType,
-        stageText: item.parentOrderStageText || this.data.stageMap[item.parentOrderStage] || '等待接单',
+        stageText: this.normalizeTextStatus(item.parentOrderStageText, this.data.stageMap[item.parentOrderStage] || '等待接单'),
         orderStatus,
-        displayStatusText: item.statusText || (orderStatus === null ? '等待接单' : (this.data.statusMap[orderStatus] || '未知')),
+        displayStatusText: this.normalizeTextStatus(item.statusText, orderStatus === null ? '等待接单' : (this.data.statusMap[orderStatus] || '未知')),
         canCancelRequirement: sourceType === 'REQUIREMENT' && Number(item.requirementStatus) === 0,
         canTo3: sourceType === 'ORDER' && orderStatus !== null && [0, 1].includes(orderStatus),
         canPay: sourceType === 'ORDER' && Number(item.payStatus) !== 1 && orderStatus === 0
@@ -67,7 +85,7 @@ Page({
       id: entityId,
       sourceType: 'ORDER',
       stageText: this.data.statusMap[orderStatus] || '未知',
-      displayStatusText: this.data.statusMap[orderStatus] || '未知',
+      displayStatusText: this.normalizeTextStatus(item.statusText, this.data.statusMap[orderStatus] || '未知'),
       canTo1: this.allowUpdateByRole(this.data.roleMode, orderStatus, 1),
       canTo2: this.allowUpdateByRole(this.data.roleMode, orderStatus, 2),
       canTo3: this.allowUpdateByRole(this.data.roleMode, orderStatus, 3),

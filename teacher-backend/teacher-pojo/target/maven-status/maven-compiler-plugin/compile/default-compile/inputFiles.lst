@@ -72,6 +72,9 @@ D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\P
 D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\PublicRequirementListItemVO.java
 D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\PublicSlideVO.java
 D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\PublicTeacherListItemVO.java
+D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\RegionCityNodeVO.java
+D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\RegionDistrictNodeVO.java
+D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\RegionProvinceNodeVO.java
 D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\RequirementPublicDetailVO.java
 D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\StatsOverviewVO.java
 D:\java\Teacher\teacher-backend\teacher-pojo\src\main\java\com\teacher\pojo\vo\SubjectCategoryTreeVO.java

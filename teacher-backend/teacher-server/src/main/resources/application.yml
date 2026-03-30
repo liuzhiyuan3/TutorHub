@@ -1,4 +1,5 @@
 server:
+  address: 0.0.0.0
   port: ${SERVER_PORT:8080}
 
 spring:
@@ -33,5 +34,5 @@ app:
     base-url: ${OSS_BASE_URL:}
     dir-prefix: ${OSS_DIR_PREFIX:teacher}
     max-size-mb: ${OSS_MAX_SIZE_MB:5}
-  qq-map:
-    key: ${QQ_MAP_KEY:}
+  amap:
+    key: ${AMAP_WEB_KEY:${QQ_MAP_KEY:}}

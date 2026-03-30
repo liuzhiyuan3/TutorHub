@@ -1,7 +1,7 @@
 const { request } = require('../../utils/request')
 const { getCurrentLocationWithAuth } = require('../../utils/location')
 const globalStore = require('../../utils/global-store')
-const { resolveRegionWithFallback } = require('../../utils/location-service')
+const { resolveRegionSmart } = require('../../utils/location-service')
 const { normalizeMediaUrl, logMediaDebug, pickTeacherImage } = require('../../utils/media-url')
 
 Page({
@@ -11,7 +11,8 @@ Page({
     hasMore: true,
     list: [],
     filters: {
-      regions: []
+      regions: [],
+      regionTree: []
     },
     query: {
       subjectId: '',
@@ -25,7 +26,15 @@ Page({
     currentDistrictText: '未定位',
     districtChips: [{ id: '', name: '全部' }],
     activeDistrictId: '',
+    provinceOptions: [{ name: '全部省份' }],
+    cityOptions: [{ name: '全部城市' }],
+    provinceIndex: 0,
+    cityIndex: 0,
+    selectedProvinceName: '',
+    selectedCityName: '',
+    manualRegionChosen: false,
     selectedSubjectName: '科目',
+    advancedVisible: false,
     showSubjectPanel: false,
     subjectCategoryTree: [],
     activeCategoryIndex: 0,
@@ -85,7 +94,7 @@ Page({
   },
   async refreshRegionOnShow() {
     try {
-      const resolved = await resolveRegionWithFallback()
+      const resolved = await resolveRegionSmart()
       globalStore.setRegion(resolved)
     } catch (e) {
       // ignore: do not block list rendering
@@ -137,19 +146,17 @@ Page({
         request({ url: '/api/home/filters', authMode: 'optional' }),
         request({ url: '/api/content/subject-categories', authMode: 'optional' })
       ])
-      const regions = [{ id: '', name: '全部区域' }].concat((data && data.regions) || [])
-      const districtChips = [{ id: '', name: '全部' }].concat(
-        (data && data.regions ? data.regions : []).map((r) => ({ id: r.id, name: r.regionName || r.name || '区域' }))
-      )
+      const flatRegions = (data && data.regions) || []
+      const regions = [{ id: '', name: '全部区域' }].concat(flatRegions)
+      const rawTree = Array.isArray(data && data.regionTree) ? data.regionTree : []
       const globalRegion = globalStore.getRegion()
-      if (!this.data.query.regionId && globalRegion && globalRegion.regionCode) {
+      if (!this.data.query.regionId && globalRegion && globalRegion.regionCode && !this.data.manualRegionChosen) {
         const exists = regions.find((r) => r.id === globalRegion.regionCode)
-        if (exists) {
-          this.setData({ 'query.regionId': globalRegion.regionCode })
-        }
+        if (exists) this.setData({ 'query.regionId': globalRegion.regionCode })
       }
-      const regionIndex = regions.findIndex((r) => r.id === this.data.query.regionId)
-      const activeDistrictId = this.data.query.regionId || ''
+      const regionTree = this.normalizeRegionTree(rawTree)
+      const cascadeState = this.buildRegionCascadeState(regionTree, this.data.query.regionId, globalRegion)
+      const regionIndex = regions.findIndex((r) => r.id === cascadeState.activeDistrictId)
       const tree = [{
         id: '',
         categoryName: '全部',
@@ -159,9 +166,16 @@ Page({
       }].concat(categoryTree || [])
       this.setData({
         'filters.regions': regions,
+        'filters.regionTree': regionTree,
         regionIndex: regionIndex >= 0 ? regionIndex : 0,
-        districtChips,
-        activeDistrictId,
+        districtChips: cascadeState.districtChips,
+        activeDistrictId: cascadeState.activeDistrictId,
+        provinceOptions: cascadeState.provinceOptions,
+        cityOptions: cascadeState.cityOptions,
+        provinceIndex: cascadeState.provinceIndex,
+        cityIndex: cascadeState.cityIndex,
+        selectedProvinceName: cascadeState.selectedProvinceName,
+        selectedCityName: cascadeState.selectedCityName,
         subjectCategoryTree: tree,
         currentCategorySubjects: (tree[0] && tree[0].subjects) || []
       })
@@ -206,10 +220,65 @@ Page({
     const id = (e && e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id) || ''
     const regions = this.data.filters.regions || []
     const regionIndex = regions.findIndex((r) => String(r.id || '') === String(id || ''))
+    const pathMap = this.buildDistrictPathMap(this.data.filters.regionTree || [])
+    const path = pathMap[id]
+    const nextState = path ? this.buildRegionCascadeState(this.data.filters.regionTree || [], id, null, true) : null
     this.setData({
       activeDistrictId: id,
       regionIndex: regionIndex >= 0 ? regionIndex : 0,
-      'query.regionId': id
+      'query.regionId': id,
+      manualRegionChosen: true,
+      provinceOptions: nextState ? nextState.provinceOptions : this.data.provinceOptions,
+      cityOptions: nextState ? nextState.cityOptions : this.data.cityOptions,
+      provinceIndex: nextState ? nextState.provinceIndex : this.data.provinceIndex,
+      cityIndex: nextState ? nextState.cityIndex : this.data.cityIndex,
+      selectedProvinceName: path ? path.provinceName : this.data.selectedProvinceName,
+      selectedCityName: path ? path.cityName : this.data.selectedCityName
+    }, () => this.load(true))
+  },
+  onProvinceChange(e) {
+    const index = Number(e.detail.value)
+    const provinceOptions = this.data.provinceOptions || [{ name: '全部省份' }]
+    const provinceName = (provinceOptions[index] && provinceOptions[index].name) || ''
+    const nextState = this.buildRegionCascadeState(
+      this.data.filters.regionTree || [],
+      '',
+      null,
+      true,
+      provinceName,
+      ''
+    )
+    this.setData({
+      provinceIndex: nextState.provinceIndex,
+      cityIndex: nextState.cityIndex,
+      selectedProvinceName: nextState.selectedProvinceName,
+      selectedCityName: nextState.selectedCityName,
+      cityOptions: nextState.cityOptions,
+      districtChips: nextState.districtChips,
+      activeDistrictId: '',
+      'query.regionId': '',
+      manualRegionChosen: true
+    }, () => this.load(true))
+  },
+  onCityChange(e) {
+    const index = Number(e.detail.value)
+    const cityOptions = this.data.cityOptions || [{ name: '全部城市' }]
+    const cityName = (cityOptions[index] && cityOptions[index].name) || ''
+    const nextState = this.buildRegionCascadeState(
+      this.data.filters.regionTree || [],
+      '',
+      null,
+      true,
+      this.data.selectedProvinceName,
+      cityName
+    )
+    this.setData({
+      cityIndex: nextState.cityIndex,
+      selectedCityName: nextState.selectedCityName,
+      districtChips: nextState.districtChips,
+      activeDistrictId: '',
+      'query.regionId': '',
+      manualRegionChosen: true
     }, () => this.load(true))
   },
   async load(reset = false) {
@@ -233,6 +302,9 @@ Page({
         if (query.sortBy === 'distance' && this.data.userLatitude != null && this.data.userLongitude != null) {
           params.push(`userLat=${encodeURIComponent(this.data.userLatitude)}`)
           params.push(`userLng=${encodeURIComponent(this.data.userLongitude)}`)
+        }
+        if (this.data.nearbyOnly && this.data.userLatitude != null && this.data.userLongitude != null) {
+          params.push(`maxDistanceKm=${encodeURIComponent(this.data.nearbyKm)}`)
         }
         return params
       }
@@ -307,6 +379,9 @@ Page({
   onSchoolKeywordInput(e) {
     this.setData({ 'query.schoolKeyword': e.detail.value || '' })
   },
+  toggleAdvanced() {
+    this.setData({ advancedVisible: !this.data.advancedVisible })
+  },
   openSubjectPanel() {
     this.setData({ showSubjectPanel: true })
   },
@@ -360,6 +435,140 @@ Page({
     }
     this.setData({ selectedSubjectName: '科目' })
   },
+  normalizeRegionTree(rawTree) {
+    if (!Array.isArray(rawTree)) return []
+    return rawTree.map((province) => ({
+      name: province && province.name ? province.name : '未分省',
+      cities: Array.isArray(province && province.cities) ? province.cities.map((city) => ({
+        name: city && city.name ? city.name : '未分市',
+        districts: Array.isArray(city && city.districts) ? city.districts.map((district) => ({
+          id: district && district.id ? district.id : '',
+          code: district && district.code ? district.code : '',
+          name: district && district.name ? district.name : '未命名区域'
+        })) : []
+      })) : []
+    }))
+  },
+  normalizeRegionText(text) {
+    return String(text || '').replace(/特别行政区|自治州|自治县|地区|省|市|区|县/g, '').trim()
+  },
+  buildDistrictPathMap(regionTree) {
+    const map = {}
+    ;(regionTree || []).forEach((province, pIndex) => {
+      ;((province && province.cities) || []).forEach((city, cIndex) => {
+        ;((city && city.districts) || []).forEach((district, dIndex) => {
+          if (!district || !district.id) return
+          map[district.id] = {
+            provinceIndex: pIndex,
+            cityIndex: cIndex,
+            districtIndex: dIndex,
+            provinceName: province.name,
+            cityName: city.name
+          }
+        })
+      })
+    })
+    return map
+  },
+  findBestPathByGeo(regionTree, geo) {
+    if (!geo) return null
+    const targetProvince = this.normalizeRegionText(geo.province)
+    const targetCity = this.normalizeRegionText(geo.city)
+    const targetDistrict = this.normalizeRegionText(geo.district || geo.regionName)
+    let best = null
+    let bestScore = -1
+    ;(regionTree || []).forEach((province, pIndex) => {
+      const provinceNorm = this.normalizeRegionText(province.name)
+      ;((province && province.cities) || []).forEach((city, cIndex) => {
+        const cityNorm = this.normalizeRegionText(city.name)
+        ;((city && city.districts) || []).forEach((district, dIndex) => {
+          const districtNorm = this.normalizeRegionText(district.name)
+          let score = 0
+          if (targetProvince && provinceNorm && provinceNorm === targetProvince) score += 1
+          if (targetCity && cityNorm && cityNorm === targetCity) score += 2
+          if (targetDistrict && districtNorm && districtNorm === targetDistrict) score += 3
+          if (score > bestScore) {
+            bestScore = score
+            best = { provinceIndex: pIndex, cityIndex: cIndex, districtIndex: dIndex, districtId: district.id }
+          }
+        })
+      })
+    })
+    return bestScore > 0 ? best : null
+  },
+  buildRegionCascadeState(regionTree, regionId, globalRegion, useCurrentSelection, forcedProvinceName, forcedCityName) {
+    const tree = Array.isArray(regionTree) && regionTree.length ? regionTree : []
+    if (!tree.length) {
+      const allDistricts = ((this.data.filters && this.data.filters.regions) || []).filter((item) => item.id)
+        .map((item) => ({ id: item.id, name: item.regionName || item.name || '区域' }))
+      return {
+        provinceOptions: [{ name: '全部省份' }],
+        cityOptions: [{ name: '全部城市' }],
+        provinceIndex: 0,
+        cityIndex: 0,
+        selectedProvinceName: '',
+        selectedCityName: '',
+        districtChips: [{ id: '', name: '全部' }].concat(allDistricts),
+        activeDistrictId: regionId || ''
+      }
+    }
+
+    const provinceOptions = [{ name: '全部省份' }].concat(tree.map((item) => ({ name: item.name })))
+    const pathMap = this.buildDistrictPathMap(tree)
+    let path = regionId ? pathMap[regionId] : null
+    if (!path && globalRegion && globalRegion.regionCode) path = pathMap[globalRegion.regionCode]
+    if (!path && !useCurrentSelection) {
+      path = this.findBestPathByGeo(tree, globalRegion)
+    }
+
+    let selectedProvinceName = forcedProvinceName != null ? forcedProvinceName : ''
+    let selectedCityName = forcedCityName != null ? forcedCityName : ''
+    if (!selectedProvinceName && path) selectedProvinceName = (tree[path.provinceIndex] && tree[path.provinceIndex].name) || ''
+    if (!selectedCityName && path && selectedProvinceName) {
+      const city = (((tree[path.provinceIndex] || {}).cities || [])[path.cityIndex] || {}).name || ''
+      selectedCityName = city
+    }
+    if (useCurrentSelection && !selectedProvinceName) selectedProvinceName = this.data.selectedProvinceName || ''
+    if (useCurrentSelection && !selectedCityName) selectedCityName = this.data.selectedCityName || ''
+
+    const provinceIndex = selectedProvinceName
+      ? Math.max(0, provinceOptions.findIndex((item) => item.name === selectedProvinceName))
+      : 0
+    const provinceNode = provinceIndex > 0 ? tree[provinceIndex - 1] : null
+    const cityOptions = [{ name: '全部城市' }].concat((provinceNode && provinceNode.cities ? provinceNode.cities : []).map((item) => ({ name: item.name })))
+    const cityIndex = selectedCityName
+      ? Math.max(0, cityOptions.findIndex((item) => item.name === selectedCityName))
+      : 0
+    const cityNode = (provinceNode && cityIndex > 0) ? provinceNode.cities[cityIndex - 1] : null
+
+    let districts = []
+    if (cityNode && cityNode.districts) {
+      districts = cityNode.districts.map((item) => ({ id: item.id, name: item.name }))
+    } else if (provinceNode && provinceNode.cities) {
+      provinceNode.cities.forEach((city) => {
+        ;(city.districts || []).forEach((item) => districts.push({ id: item.id, name: item.name }))
+      })
+    } else {
+      tree.forEach((province) => {
+        ;(province.cities || []).forEach((city) => {
+          ;(city.districts || []).forEach((item) => districts.push({ id: item.id, name: item.name }))
+        })
+      })
+    }
+
+    const validDistrictIds = new Set(districts.map((item) => item.id))
+    const activeDistrictId = regionId && validDistrictIds.has(regionId) ? regionId : ''
+    return {
+      provinceOptions,
+      cityOptions,
+      provinceIndex,
+      cityIndex,
+      selectedProvinceName: provinceIndex > 0 ? provinceOptions[provinceIndex].name : '',
+      selectedCityName: cityIndex > 0 ? cityOptions[cityIndex].name : '',
+      districtChips: [{ id: '', name: '全部' }].concat(districts),
+      activeDistrictId
+    }
+  },
   onRegionChange(e) {
     const index = Number(e.detail.value)
     const item = this.data.filters.regions[index] || { id: '' }
@@ -391,6 +600,9 @@ Page({
   },
   onSearch() {
     this.load(true)
+    if (this.data.advancedVisible) {
+      this.setData({ advancedVisible: false })
+    }
   },
   onLoadMore() {
     this.load(false)

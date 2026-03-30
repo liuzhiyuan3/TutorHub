@@ -14,17 +14,26 @@
         </picker>
       </view>
 
+      <view class="region-cascade">
+        <picker mode="selector" range="{{provinceOptions}}" range-key="name" bindchange="onProvinceChange">
+          <view class="chip chip-cascade">{{selectedProvinceName || '全部省份'}}<text class="i i-menu chip-arrow-icon"></text></view>
+        </picker>
+        <picker mode="selector" range="{{cityOptions}}" range-key="name" bindchange="onCityChange">
+          <view class="chip chip-cascade">{{selectedCityName || '全部城市'}}<text class="i i-menu chip-arrow-icon"></text></view>
+        </picker>
+      </view>
+
       <scroll-view class="district-scroll" scroll-x="true" show-scrollbar="false">
         <view wx:for="{{districtChips}}" wx:key="id" class="chip chip-district {{activeDistrictId === item.id ? 'chip-active' : ''}}" data-id="{{item.id}}" bindtap="chooseDistrict">{{item.name}}</view>
       </scroll-view>
 
       <view class="quick-actions">
         <view class="chip chip-action {{query.subjectId ? 'chip-active' : ''}}" bindtap="openSubjectPanel"><text class="i i-search inline-icon"></text>{{selectedSubjectName || '科目'}}<text class="i i-menu chip-arrow-icon"></text></view>
-        <view class="chip chip-action" bindtap="onSearch"><text class="i i-menu inline-icon"></text>筛选</view>
+        <view class="chip chip-action {{advancedVisible ? 'chip-active' : ''}}" bindtap="toggleAdvanced"><text class="i i-menu inline-icon"></text>{{advancedVisible ? '收起' : '筛选'}}</view>
       </view>
     </view>
 
-    <view class="advanced-panel">
+    <view class="advanced-panel" wx:if="{{advancedVisible}}">
       <input class="input" placeholder="关键词（身份/学校/专业）" value="{{query.keyword}}" bindinput="onKeywordInput" />
       <input class="input" placeholder="学校关键词（可选）" value="{{query.schoolKeyword}}" bindinput="onSchoolKeywordInput" />
       <view class="filter-actions">

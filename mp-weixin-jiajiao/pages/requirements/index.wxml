@@ -3,28 +3,41 @@
     <view class="section-head">
       <view class="section-title-wrap">
         <text class="section-icon i i-requirement"></text>
-        <view class="section-title section-title-sm">{{roleMode === 'teacher' ? '接单列表' : '需求广场'}}</view>
+        <view class="section-title section-title-sm">{{roleMode === 'teacher' ? '接单列表' : '教员浏览'}}</view>
       </view>
       <view class="section-sub">共 {{ list.length }} 条</view>
     </view>
-    <view wx:if="{{roleMode !== 'teacher'}}" class="section-sub note-line">当前为{{roleMode === 'parent' ? '家长' : '游客'}}视角，仅支持浏览需求。</view>
+    <view wx:if="{{roleMode !== 'teacher'}}" class="section-sub note-line">当前为{{roleMode === 'parent' ? '家长' : '游客'}}视角，展示可预约教员信息。</view>
 
     <view class="quick-filter-row">
-      <view class="quick-filter-item {{selectedSubjectId ? 'selected' : ''}}" bindtap="openSubjectPanel">
-        <text class="i i-search filter-icon"></text>{{selectedSubjectName || '科目'}}<text class="i i-menu arrow"></text>
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item {{selectedSubjectId ? 'selected' : ''}}" bindtap="openSubjectPanel">
+          <text class="i i-search filter-icon"></text>
+          <text class="quick-filter-label">{{selectedSubjectName || '科目'}}</text>
+          <text class="arrow">▼</text>
+        </view>
       </view>
-      <picker mode="selector" range="{{filters.regions}}" range-key="name" bindchange="onRegionChange">
-        <view class="quick-filter-item {{(filters.regions[regionIndex] && filters.regions[regionIndex].id) ? 'selected' : ''}}">
-          <text class="i i-location filter-icon"></text>{{filters.regions[regionIndex] ? filters.regions[regionIndex].name : '区域'}}<text class="i i-menu arrow"></text>
+
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item {{(filters.regions[regionIndex] && filters.regions[regionIndex].id) ? 'selected' : ''}}" bindtap="openRegionSheet">
+          <text class="i i-location filter-icon"></text>
+          <text class="quick-filter-label">{{selectedRegionLabel || '区域'}}</text>
+          <text class="arrow">▼</text>
         </view>
-      </picker>
-      <picker mode="selector" range="{{budgetRangeOptions}}" range-key="label" bindchange="onBudgetRangeChange">
-        <view class="quick-filter-item {{budgetRangeIndex > 0 ? 'selected' : ''}}">
-          {{budgetRangeOptions[budgetRangeIndex].label === '预算不限' ? '预算' : budgetRangeOptions[budgetRangeIndex].label}}<text class="i i-menu arrow"></text>
+      </view>
+
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item {{budgetRangeIndex > 0 ? 'selected' : ''}}" bindtap="openBudgetSheet">
+          <text class="quick-filter-label">{{budgetRangeOptions[budgetRangeIndex].label === '预算不限' ? '预算' : budgetRangeOptions[budgetRangeIndex].label}}</text>
+          <text class="arrow">▼</text>
         </view>
-      </picker>
-      <view class="quick-filter-item quick-filter-action {{showAdvanced ? 'active' : ''}}" bindtap="toggleAdvancedPanel">
-        <text class="i i-menu filter-icon"></text>筛选<text class="i i-menu arrow"></text>
+      </view>
+
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item quick-filter-action {{showAdvanced ? 'active' : ''}}" bindtap="toggleAdvancedPanel">
+          <text class="quick-filter-label">筛选</text>
+          <text class="arrow">▼</text>
+        </view>
       </view>
     </view>
 
@@ -47,6 +60,35 @@
         </view>
       </view>
     </view>
+
+    <view wx:if="{{showRegionSheet}}" class="subject-panel-mask" bindtap="closeRegionSheet">
+      <view class="subject-panel region-panel" catchtap="noop">
+        <view class="subject-panel-head">
+          <text class="subject-panel-title">区域筛选</text>
+          <text class="subject-panel-reset" bindtap="resetAllFilters">重置</text>
+        </view>
+        <view class="subject-panel-sub">先选省市，再点区县，立即生效</view>
+        <view class="region-cascade-row">
+          <picker mode="selector" range="{{provinceOptions}}" range-key="name" bindchange="onProvinceChange">
+            <view class="region-cascade-item">{{selectedProvinceName || '全部省份'}}<text class="arrow">▼</text></view>
+          </picker>
+          <picker mode="selector" range="{{cityOptions}}" range-key="name" bindchange="onCityChange">
+            <view class="region-cascade-item">{{selectedCityName || '全部城市'}}<text class="arrow">▼</text></view>
+          </picker>
+        </view>
+        <scroll-view class="region-district-scroll" scroll-y="true">
+          <view class="region-district-wrap">
+            <view
+              wx:for="{{districtChips}}"
+              wx:key="id"
+              class="subject-chip {{activeDistrictId === item.id ? 'active' : ''}}"
+              data-id="{{item.id}}"
+              bindtap="chooseDistrict"
+            >{{item.name}}</view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
   </view>
 
   <view wx:if="{{error}}" class="error-box">
@@ -63,25 +105,47 @@
   </view>
 
   <view wx:elif="{{!list.length}}" class="card">
-    <mp-empty text="暂无可接需求" iconType="i-requirement" />
+    <mp-empty text="{{roleMode === 'teacher' ? '暂无可接需求' : '暂无可浏览教员'}}" iconType="i-requirement" />
   </view>
 
   <block wx:else>
     <view class="card req-card" wx:for="{{list}}" wx:key="id">
-      <view class="row">
-        <view class="title"><text class="i i-requirement inline-icon"></text>{{item.requirementTitle}}</view>
-        <view class="{{ item.requirementStatus === 0 ? 'tag pending' : item.requirementStatus === 2 ? 'tag success' : item.requirementStatus === 3 ? 'tag error' : 'tag info' }}">
-          {{item.requirementStatusText || statusMap[item.requirementStatus] || '未知'}}
+      <block wx:if="{{roleMode === 'teacher'}}">
+        <view class="row">
+          <view class="title"><text class="i i-requirement inline-icon"></text>{{item.requirementTitle}}</view>
+          <view class="{{ item.requirementStatus === 0 ? 'tag pending' : item.requirementStatus === 2 ? 'tag success' : item.requirementStatus === 3 ? 'tag error' : 'tag info' }}">
+            {{item.requirementStatusText || statusMap[item.requirementStatus] || '未知'}}
+          </view>
         </view>
-      </view>
-      <view class="muted">{{item.requirementGrade}} · {{item.requirementAddress || '-'}}</view>
-      <view class="muted">预算：{{item.requirementBudgetMin || item.requirementSalary || 0}} - {{item.requirementBudgetMax || item.requirementSalary || 0}} 元/小时</view>
-      <view class="muted">紧急程度：{{item.requirementUrgencyText || '普通'}} · 方式：{{item.requirementTutoringMethod === 0 ? '线上' : (item.requirementTutoringMethod === 1 ? '线下' : '线上线下')}}</view>
-      <view class="muted" wx:if="{{item.expectedTimeSlotsText}}">期望时段：{{item.expectedTimeSlotsText}}</view>
-      <view wx:if="{{roleMode === 'teacher'}}" class="btn {{item.requirementStatus !== 0 || item.teacherProfileVisibility !== 'VISIBLE' ? 'disabled' : ''}}" bindtap="receive" data-id="{{item.id}}" data-status="{{item.requirementStatus}}" data-title="{{item.requirementTitle}}" data-visibility="{{item.teacherProfileVisibility}}">
-        {{ receivingId === item.id ? '接单中...' : item.receiveActionText }}
-      </view>
-      <view wx:else class="tag info mt-12r">仅教员可接单</view>
+        <view class="muted">{{item.requirementGrade}} · {{item.requirementAddress || '-'}}</view>
+        <view class="muted">预算：{{item.requirementBudgetMin || item.requirementSalary || 0}} - {{item.requirementBudgetMax || item.requirementSalary || 0}} 元/小时</view>
+        <view class="muted">紧急程度：{{item.requirementUrgencyText || '普通'}} · 方式：{{item.requirementTutoringMethod === 0 ? '线上' : (item.requirementTutoringMethod === 1 ? '线下' : '线上线下')}}</view>
+        <view class="muted" wx:if="{{item.expectedTimeSlotsText}}">期望时段：{{item.expectedTimeSlotsText}}</view>
+        <view class="btn {{item.requirementStatus !== 0 || item.teacherProfileVisibility !== 'VISIBLE' ? 'disabled' : ''}}" bindtap="receive" data-id="{{item.id}}" data-status="{{item.requirementStatus}}" data-title="{{item.requirementTitle}}" data-visibility="{{item.teacherProfileVisibility}}">
+          {{ receivingId === item.id ? '接单中...' : item.receiveActionText }}
+        </view>
+      </block>
+      <block wx:else>
+        <view class="row">
+          <view class="title title-with-avatar">
+            <image
+              class="teacher-avatar"
+              src="{{item.teacherPhoto || '/static/imgDefault.png'}}"
+              mode="aspectFill"
+            />
+            <text class="i i-profile inline-icon"></text>{{item.teacherName}}
+          </view>
+          <view class="{{ item.teacherAuditStatus === 1 ? 'tag success' : item.teacherAuditStatus === 2 ? 'tag error' : 'tag pending' }}">
+            {{teacherStatusMap[item.teacherAuditStatus] || '待审核'}}
+          </view>
+        </view>
+        <view class="muted">{{item.teacherIdentity}} · {{item.teacherTeachingYears}} 年教龄</view>
+        <view class="muted">{{item.teacherSchool}} {{item.teacherMajor}}</view>
+        <view class="muted">擅长学科：{{item.subjectText}}</view>
+        <view class="muted">授课区域：{{item.regionText}}</view>
+        <view class="muted">历史成交：{{item.historyDealCount}} · 累计聘用：{{item.hireCount}}</view>
+        <view class="btn" bindtap="goTeacherDetail" data-id="{{item.id}}">查看教员详情</view>
+      </block>
     </view>
   </block>
 
@@ -117,4 +181,13 @@
       </view>
     </view>
   </van-popup>
+
+  <van-action-sheet
+    show="{{showBudgetSheet}}"
+    actions="{{budgetActions}}"
+    cancel-text="取消"
+    bind:close="closeBudgetSheet"
+    bind:cancel="closeBudgetSheet"
+    bind:select="onBudgetSelect"
+  />
 </view>

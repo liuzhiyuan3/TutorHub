@@ -41,7 +41,7 @@ public class AuthService {
     private final WechatProperties wechatProperties;
     private final ObjectMapper objectMapper;
     private final MediaUrlService mediaUrlService;
-    private final HttpClient httpClient = HttpClient.newBuilder().build();
+    private volatile HttpClient httpClient;
 
     public AuthService(UserMapper userMapper, AdminMapper adminMapper, JwtUtils jwtUtils,
                        WechatProperties wechatProperties, ObjectMapper objectMapper,
@@ -64,7 +64,8 @@ public class AuthService {
         }
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.updateById(user);
-        return buildLoginVO(user);
+        Integer activeUserType = resolveActiveUserType(request.getUserType(), user.getUserType());
+        return buildLoginVO(user, activeUserType);
     }
 
     public LoginVO adminLogin(LoginRequest request) {
@@ -108,7 +109,7 @@ public class AuthService {
         user.setCreateTime(now);
         user.setUpdateTime(now);
         userMapper.insert(user);
-        return buildLoginVO(user);
+        return buildLoginVO(user, request.getUserType());
     }
 
     public LoginVO userWechatLogin(WechatLoginRequest request) {
@@ -124,9 +125,6 @@ public class AuthService {
                 .eq(UserEntity::getUserDeleteStatus, 0)
                 .last("limit 1"));
         if (user != null) {
-            if (!userType.equals(user.getUserType())) {
-                throw new BusinessException("当前微信账号已绑定" + (user.getUserType() == 1 ? "教员" : "家长") + "身份，请切换后重试");
-            }
             if (!cleanNickName.isBlank() && !cleanNickName.equals(trimToEmpty(user.getUserName()))) {
                 user.setUserName(cleanNickName);
                 user.setNicknameSource("wechat");
@@ -138,7 +136,8 @@ public class AuthService {
             user.setLastLoginTime(LocalDateTime.now());
             user.setUpdateTime(LocalDateTime.now());
             userMapper.updateById(user);
-            return buildLoginVO(user);
+            Integer activeUserType = resolveActiveUserType(userType, user.getUserType());
+            return buildLoginVO(user, activeUserType);
         }
 
         UserEntity newUser = new UserEntity();
@@ -162,7 +161,7 @@ public class AuthService {
         newUser.setUpdateTime(now);
         userMapper.insert(newUser);
 
-        return buildLoginVO(newUser);
+        return buildLoginVO(newUser, userType);
     }
 
     public LoginVO userWechatPhoneLogin(WechatPhoneLoginRequest request) {
@@ -189,7 +188,6 @@ public class AuthService {
         UserEntity target = openidUser != null ? openidUser : phoneUser;
         LocalDateTime now = LocalDateTime.now();
         if (target != null) {
-            ensureUserTypeMatch(target, userType);
             String oldOpenid = trimToEmpty(target.getUserWechatOpenid());
             if (!oldOpenid.isBlank() && !openid.equals(oldOpenid)) {
                 throw new BusinessException("当前手机号已绑定其他微信账号");
@@ -199,7 +197,8 @@ public class AuthService {
             target.setLastLoginTime(now);
             target.setUpdateTime(now);
             userMapper.updateById(target);
-            return buildLoginVO(target);
+            Integer activeUserType = resolveActiveUserType(userType, target.getUserType());
+            return buildLoginVO(target, activeUserType);
         }
 
         UserEntity newUser = new UserEntity();
@@ -218,7 +217,7 @@ public class AuthService {
         newUser.setCreateTime(now);
         newUser.setUpdateTime(now);
         userMapper.insert(newUser);
-        return buildLoginVO(newUser);
+        return buildLoginVO(newUser, userType);
     }
 
     public AdminSessionVO adminMe() {
@@ -246,7 +245,7 @@ public class AuthService {
                     .GET()
                     .timeout(java.time.Duration.ofSeconds(10))
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             JsonNode node = objectMapper.readTree(response.body());
             if (node.has("errcode") && node.path("errcode").asInt() != 0) {
                 String errMsg = node.path("errmsg").asText("微信接口异常");
@@ -276,7 +275,7 @@ public class AuthService {
                     .header("Content-Type", "application/json")
                     .timeout(java.time.Duration.ofSeconds(10))
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             JsonNode node = objectMapper.readTree(response.body());
             if (node.has("errcode") && node.path("errcode").asInt() != 0) {
                 String errMsg = node.path("errmsg").asText("微信手机号接口异常");
@@ -312,7 +311,7 @@ public class AuthService {
                     .GET()
                     .timeout(java.time.Duration.ofSeconds(10))
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
             JsonNode node = objectMapper.readTree(response.body());
             if (node.has("errcode") && node.path("errcode").asInt() != 0) {
                 String errMsg = node.path("errmsg").asText("微信access_token接口异常");
@@ -384,23 +383,25 @@ public class AuthService {
         return value.length() > 255 ? value.substring(0, 255) : value;
     }
 
-    private void ensureUserTypeMatch(UserEntity user, Integer expectedType) {
-        if (user == null || expectedType == null) {
-            throw new BusinessException("身份校验失败");
+    private Integer resolveActiveUserType(Integer requestedUserType, Integer fallbackUserType) {
+        if (requestedUserType != null && (requestedUserType == 0 || requestedUserType == 1)) {
+            return requestedUserType;
         }
-        if (!expectedType.equals(user.getUserType())) {
-            throw new BusinessException("当前账号已绑定" + (user.getUserType() == 1 ? "教员" : "家长") + "身份，请切换后重试");
+        if (fallbackUserType != null && (fallbackUserType == 0 || fallbackUserType == 1)) {
+            return fallbackUserType;
         }
+        return 0;
     }
 
-    private LoginVO buildLoginVO(UserEntity user) {
-        String token = jwtUtils.generateToken(new LoginUser(user.getId(), user.getUserAccount(), user.getUserType(), false));
+    private LoginVO buildLoginVO(UserEntity user, Integer activeUserType) {
+        Integer resolvedType = resolveActiveUserType(activeUserType, user.getUserType());
+        String token = jwtUtils.generateToken(new LoginUser(user.getId(), user.getUserAccount(), resolvedType, false));
         return new LoginVO(
                 token,
                 user.getId(),
                 user.getUserAccount(),
                 user.getUserName(),
-                user.getUserType(),
+                resolvedType,
                 false,
                 user.getUserWechatOpenid(),
                 user.getProfileCompleted() != null && user.getProfileCompleted() == 1
@@ -409,6 +410,22 @@ public class AuthService {
 
     private String trimToEmpty(String text) {
         return text == null ? "" : text.trim();
+    }
+
+    private HttpClient getHttpClient() {
+        if (httpClient != null) {
+            return httpClient;
+        }
+        synchronized (this) {
+            if (httpClient == null) {
+                try {
+                    httpClient = HttpClient.newBuilder().build();
+                } catch (RuntimeException ex) {
+                    throw new BusinessException("微信登录失败：HTTP客户端初始化异常");
+                }
+            }
+            return httpClient;
+        }
     }
 
     public LoginUser currentLoginUser() {

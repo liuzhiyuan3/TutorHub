@@ -50,6 +50,7 @@ function toLocationErrorMessage(error) {
   if (reason === 'cancel') return '已取消定位'
   if (reason === 'network') return '网络异常，请检查网络后重试'
   if (reason === 'choose') return '地图选点失败，请稍后重试'
+  if (reason === 'invalid_coordinate') return '定位坐标异常，请重试或手动选点'
   return '定位失败，请稍后重试'
 }
 
@@ -90,6 +91,14 @@ function getLocationRaw(type) {
 function normalizeCoordinate(value) {
   const num = Number(value)
   return Number.isFinite(num) ? num : null
+}
+
+function isValidLatitude(value) {
+  return Number.isFinite(value) && value >= -90 && value <= 90
+}
+
+function isValidLongitude(value) {
+  return Number.isFinite(value) && value >= -180 && value <= 180
 }
 
 function normalizeNumber(value, fallback) {
@@ -163,9 +172,14 @@ async function getCurrentLocationWithAuth() {
   await ensureLocationAuth()
   try {
     const location = await getLocationRaw('gcj02')
+    const latitude = normalizeCoordinate(location && location.latitude)
+    const longitude = normalizeCoordinate(location && location.longitude)
+    if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
+      throw buildLocationError({ errMsg: 'invalid coordinate from wx.getLocation' }, 'invalid_coordinate')
+    }
     return {
-      latitude: normalizeNumber(location.latitude, 0),
-      longitude: normalizeNumber(location.longitude, 0),
+      latitude,
+      longitude,
       speed: normalizeNumber(location.speed, 0),
       accuracy: normalizeNumber(location.accuracy, 0),
       altitude: normalizeNumber(location.altitude, null),

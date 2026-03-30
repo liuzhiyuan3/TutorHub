@@ -3,6 +3,15 @@ const { ensureRole, getLoginState } = require('../../utils/auth-guard')
 const { getCurrentLocationWithAuth, chooseLocationWithAuth } = require('../../utils/location')
 const { reverseGeocode, classifyLocationError, toLocationErrorMessage } = require('../../utils/location-service')
 
+function parseCoordinateSeed(raw, type) {
+  if (raw === '' || raw === null || raw === undefined) return null
+  const num = Number(raw)
+  if (!Number.isFinite(num)) return null
+  if (type === 'latitude' && (num < -90 || num > 90)) return null
+  if (type === 'longitude' && (num < -180 || num > 180)) return null
+  return num
+}
+
 Page({
   data: {
     subjects: [],
@@ -28,6 +37,8 @@ Page({
     authSheetRole: 'parent',
     locationSheetVisible: false,
     locating: false,
+    locationStatusText: '',
+    locationStatusType: '',
     form: {
       requirementTitle: '',
       requirementDescription: '',
@@ -119,6 +130,48 @@ Page({
   closeLocationSheet() {
     this.setData({ locationSheetVisible: false })
   },
+  handleLocationFailure(error, opts = {}) {
+    const reason = classifyLocationError(error)
+    if (reason === 'cancel') return
+    this.setData({
+      locationStatusText: toLocationErrorMessage(error),
+      locationStatusType: 'error'
+    })
+
+    if (reason === 'auth') {
+      wx.showModal({
+        title: '定位权限未开启',
+        content: '请在设置中开启定位权限，或使用地图手动选点。',
+        confirmText: '去设置',
+        cancelText: '手动选点',
+        success: (res) => {
+          if (res.confirm) {
+            wx.openSetting({})
+          } else if (!opts.fromMap) {
+            this.chooseLocationOnMap()
+          }
+        }
+      })
+      return
+    }
+
+    if (reason === 'service_off') {
+      wx.showModal({
+        title: '系统定位未开启',
+        content: '请先开启手机定位服务，或直接使用地图手动选点。',
+        confirmText: '地图选点',
+        cancelText: '知道了',
+        success: (res) => {
+          if (res.confirm && !opts.fromMap) {
+            this.chooseLocationOnMap()
+          }
+        }
+      })
+      return
+    }
+
+    wx.showToast({ title: toLocationErrorMessage(error), icon: 'none' })
+  },
   async useCurrentLocation() {
     if (this.data.locating) return
     this.setData({ locating: true })
@@ -136,11 +189,13 @@ Page({
         'form.requirementAddress': addressText,
         'form.requirementLongitude': String(pos.longitude),
         'form.requirementLatitude': String(pos.latitude),
-        locationSheetVisible: false
+        locationSheetVisible: false,
+        locationStatusText: '定位成功，地址已自动填充',
+        locationStatusType: 'success'
       })
       wx.showToast({ title: '已获取当前位置', icon: 'success' })
     } catch (e) {
-      wx.showToast({ title: toLocationErrorMessage(e), icon: 'none' })
+      this.handleLocationFailure(e, { fromMap: false })
     } finally {
       this.setData({ locating: false })
     }
@@ -149,11 +204,11 @@ Page({
     if (this.data.locating) return
     this.setData({ locating: true })
     try {
-      const seedLongitude = Number(this.data.form.requirementLongitude)
-      const seedLatitude = Number(this.data.form.requirementLatitude)
+      const seedLongitude = parseCoordinateSeed(this.data.form.requirementLongitude, 'longitude')
+      const seedLatitude = parseCoordinateSeed(this.data.form.requirementLatitude, 'latitude')
       const chooseOptions = {}
-      if (Number.isFinite(seedLatitude)) chooseOptions.latitude = seedLatitude
-      if (Number.isFinite(seedLongitude)) chooseOptions.longitude = seedLongitude
+      if (seedLatitude !== null) chooseOptions.latitude = seedLatitude
+      if (seedLongitude !== null) chooseOptions.longitude = seedLongitude
       const selected = await chooseLocationWithAuth(chooseOptions)
       const fallback = `经度${Number(selected.longitude).toFixed(6)}，纬度${Number(selected.latitude).toFixed(6)}`
       let address = selected.address || selected.name || ''
@@ -170,11 +225,13 @@ Page({
         'form.requirementAddress': address || fallback,
         'form.requirementLongitude': String(selected.longitude),
         'form.requirementLatitude': String(selected.latitude),
-        locationSheetVisible: false
+        locationSheetVisible: false,
+        locationStatusText: '地图选点成功，地址已更新',
+        locationStatusType: 'success'
       })
       wx.showToast({ title: '地址已更新', icon: 'success' })
     } catch (e) {
-      if (classifyLocationError(e) !== 'cancel') wx.showToast({ title: toLocationErrorMessage(e), icon: 'none' })
+      this.handleLocationFailure(e, { fromMap: true })
     } finally {
       this.setData({ locating: false })
     }
@@ -213,12 +270,36 @@ Page({
   validate() {
     const { form } = this.data
     if (!form.requirementTitle.trim()) return '请填写需求标题'
+    if (form.requirementTitle.trim().length > 60) return '需求标题不超过60个字'
     if (!form.requirementDescription.trim()) return '请填写需求描述'
     if (!form.requirementGrade.trim()) return '请填写需求年级'
     if (!form.requirementAddress.trim()) return '请填写授课地址'
     const salary = Number(form.requirementSalary)
     if (!salary || salary <= 0) return '请填写正确的薪资'
+    if (salary < 20 || salary > 2000) return '薪资范围建议在20~2000元/小时'
     return ''
+  },
+  buildSubmitPayload(subject, region) {
+    const form = this.data.form
+    const salary = Number(form.requirementSalary)
+    return {
+      ...form,
+      requirementTitle: form.requirementTitle.trim(),
+      requirementDescription: form.requirementDescription.trim(),
+      requirementGrade: form.requirementGrade.trim(),
+      requirementAddress: form.requirementAddress.trim(),
+      salaryText: (form.salaryText || '').trim() || `${salary}元/小时（可协商）`,
+      crossStreet: (form.crossStreet || '').trim(),
+      studentDetail: (form.studentDetail || '').trim(),
+      teacherQualification: (form.teacherQualification || '').trim(),
+      teacherRequirementText: (form.teacherRequirementText || '').trim(),
+      subjectId: subject.id,
+      regionId: region.id,
+      requirementSalary: salary,
+      requirementLongitude: form.requirementLongitude ? Number(form.requirementLongitude) : null,
+      requirementLatitude: form.requirementLatitude ? Number(form.requirementLatitude) : null,
+      requirementImages: this.data.requirementImages.join(',')
+    }
   },
   ensureParentForSubmit() {
     const state = getLoginState()
@@ -232,7 +313,7 @@ Page({
   },
   async submit() {
     if (!this.ensureParentForSubmit()) return
-    if (this.data.submitting) return
+    if (this.data.submitting || this.data.uploadingImages) return
     const subject = this.data.subjects[this.data.subjectIndex]
     const region = this.data.regions[this.data.regionIndex]
     const message = this.validate()
@@ -246,20 +327,12 @@ Page({
     }
     this.setData({ submitting: true })
     try {
+      const payload = this.buildSubmitPayload(subject, region)
       await request({
         url: '/api/requirement',
         method: 'POST',
         authMode: 'required',
-        data: {
-          ...this.data.form,
-          subjectId: subject.id,
-          regionId: region.id,
-          requirementSalary: Number(this.data.form.requirementSalary),
-          requirementLongitude: this.data.form.requirementLongitude ? Number(this.data.form.requirementLongitude) : null,
-          requirementLatitude: this.data.form.requirementLatitude ? Number(this.data.form.requirementLatitude) : null,
-          salaryText: this.data.form.salaryText || `${Number(this.data.form.requirementSalary)}/hour negotiable`,
-          requirementImages: this.data.requirementImages.join(',')
-        }
+        data: payload
       })
       wx.showToast({ title: '发布成功', icon: 'success' })
       setTimeout(() => wx.switchTab({ url: '/pages/requirements/index' }), 600)

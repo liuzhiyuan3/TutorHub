@@ -15,6 +15,9 @@ import com.teacher.pojo.vo.HomeOverviewVO;
 import com.teacher.pojo.vo.PublicOptionVO;
 import com.teacher.pojo.vo.PublicRequirementListItemVO;
 import com.teacher.pojo.vo.PublicTeacherListItemVO;
+import com.teacher.pojo.vo.RegionCityNodeVO;
+import com.teacher.pojo.vo.RegionDistrictNodeVO;
+import com.teacher.pojo.vo.RegionProvinceNodeVO;
 import com.teacher.server.mapper.*;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +29,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,11 +106,12 @@ public class HomeQueryService {
                 .stream()
                 .map(item -> new PublicOptionVO(item.getId(), item.getSubjectCode(), item.getSubjectName()))
                 .collect(Collectors.toList());
-        List<PublicOptionVO> regions = regionMapper.selectList(new LambdaQueryWrapper<RegionEntity>()
+        List<RegionEntity> regionEntities = regionMapper.selectList(new LambdaQueryWrapper<RegionEntity>()
                 .eq(RegionEntity::getRegionDeleteStatus, 0)
                 .eq(RegionEntity::getRegionStatus, 1)
-                .orderByAsc(RegionEntity::getRegionSort))
-                .stream()
+                .orderByAsc(RegionEntity::getRegionSort)
+                .orderByAsc(RegionEntity::getCreateTime));
+        List<PublicOptionVO> regions = regionEntities.stream()
                 .map(item -> new PublicOptionVO(item.getId(), item.getRegionCode(), item.getRegionName()))
                 .collect(Collectors.toList());
         List<PublicOptionVO> schools = schoolMapper.selectList(new LambdaQueryWrapper<SchoolEntity>()
@@ -114,13 +121,42 @@ public class HomeQueryService {
                 .stream()
                 .map(item -> new PublicOptionVO(item.getId(), item.getSchoolCode(), item.getSchoolName()))
                 .collect(Collectors.toList());
-        return new FilterMetaVO(subjects, regions, schools);
+        List<RegionProvinceNodeVO> regionTree = buildRegionTree(regionEntities);
+        return new FilterMetaVO(subjects, regions, schools, regionTree);
+    }
+
+    private List<RegionProvinceNodeVO> buildRegionTree(List<RegionEntity> regions) {
+        if (regions == null || regions.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Map<String, Map<String, List<RegionDistrictNodeVO>>> grouped = new LinkedHashMap<>();
+        for (RegionEntity item : regions) {
+            String provinceName = safeRegionName(item.getRegionProvince(), "未分省");
+            String cityName = safeRegionName(item.getRegionCity(), "未分市");
+            String districtName = safeRegionName(item.getRegionName(), "未命名区域");
+            grouped.computeIfAbsent(provinceName, key -> new LinkedHashMap<>())
+                    .computeIfAbsent(cityName, key -> new ArrayList<>())
+                    .add(new RegionDistrictNodeVO(item.getId(), item.getRegionCode(), districtName));
+        }
+
+        List<RegionProvinceNodeVO> tree = new ArrayList<>(grouped.size());
+        grouped.forEach((province, cityMap) -> {
+            List<RegionCityNodeVO> cityNodes = new ArrayList<>(cityMap.size());
+            cityMap.forEach((city, districts) -> cityNodes.add(new RegionCityNodeVO(city, districts)));
+            tree.add(new RegionProvinceNodeVO(province, cityNodes));
+        });
+        return tree;
+    }
+
+    private String safeRegionName(String value, String fallback) {
+        String text = value == null ? "" : value.trim();
+        return text.isEmpty() ? fallback : text;
     }
 
     public PageResult<PublicTeacherListItemVO> teacherSearch(long pageNo, long pageSize, String subjectId, String regionId,
                                                               Integer tutoringMethod, Integer auditStatus, String keyword,
                                                               String schoolKeyword, Integer minTeachingYears, Integer maxTeachingYears,
-                                                              BigDecimal userLat, BigDecimal userLng, String sortBy) {
+                                                              BigDecimal userLat, BigDecimal userLng, BigDecimal maxDistanceKm, String sortBy) {
         if (minTeachingYears != null && maxTeachingYears != null && minTeachingYears > maxTeachingYears) {
             throw new BusinessException("Invalid teaching years range");
         }
@@ -151,6 +187,9 @@ public class HomeQueryService {
         if (maxTeachingYears != null) {
             wrapper.le(TeacherInfoEntity::getTeacherTeachingYears, maxTeachingYears);
         }
+        boolean hasExplicitRegionFilter = regionId != null && !regionId.isBlank();
+        UserRegionPreference userRegionPreference = hasExplicitRegionFilter ? null : resolveUserRegionPreferenceByLoginUser();
+
         if (subjectId != null && !subjectId.isBlank()) {
             List<String> teacherIds = teacherSubjectMapper.selectList(new LambdaQueryWrapper<TeacherSubjectEntity>()
                             .eq(TeacherSubjectEntity::getSubjectId, subjectId))
@@ -160,7 +199,7 @@ public class HomeQueryService {
             }
             wrapper.in(TeacherInfoEntity::getId, teacherIds);
         }
-        if (regionId != null && !regionId.isBlank()) {
+        if (hasExplicitRegionFilter) {
             List<String> teacherIds = teacherRegionMapper.selectList(new LambdaQueryWrapper<TeacherRegionEntity>()
                             .eq(TeacherRegionEntity::getRegionId, regionId))
                     .stream().map(TeacherRegionEntity::getTeacherId).distinct().collect(Collectors.toList());
@@ -180,11 +219,85 @@ public class HomeQueryService {
                     .orderByDesc(TeacherInfoEntity::getTeacherSuccessCount)
                     .orderByDesc(TeacherInfoEntity::getCreateTime);
         }
+        boolean hasUserCoordinate = userLat != null && userLng != null;
+        boolean hasDistanceFilter = maxDistanceKm != null && maxDistanceKm.compareTo(BigDecimal.ZERO) > 0;
+        boolean distanceSort = "distance".equalsIgnoreCase(sortBy);
+        boolean useDistanceFlow = hasUserCoordinate && (distanceSort || hasDistanceFilter);
+        boolean preferredRegionSort = !hasExplicitRegionFilter && userRegionPreference != null;
+
+        if (useDistanceFlow) {
+            List<TeacherInfoEntity> allRecords = teacherInfoMapper.selectList(wrapper);
+            if (allRecords.isEmpty()) {
+                return new PageResult<>(0, pageNo, pageSize, Collections.emptyList());
+            }
+            Map<String, Integer> regionMatchScoreMap = preferredRegionSort
+                    ? buildTeacherRegionMatchScoreMap(
+                    allRecords.stream().map(TeacherInfoEntity::getId).collect(Collectors.toList()),
+                    userRegionPreference)
+                    : Collections.emptyMap();
+            BigDecimal filterDistance = hasDistanceFilter ? maxDistanceKm : null;
+            List<TeacherInfoEntity> filteredRecords = allRecords.stream()
+                    .filter(item -> {
+                        Double distance = calcDistanceKm(userLat, userLng, item.getTeacherWorkLatitude(), item.getTeacherWorkLongitude());
+                        if (filterDistance == null) {
+                            return true;
+                        }
+                        return distance != null && BigDecimal.valueOf(distance).compareTo(filterDistance) <= 0;
+                    })
+                    .sorted(Comparator
+                            .comparing((TeacherInfoEntity item) -> regionMatchScoreMap.getOrDefault(item.getId(), 0),
+                                    Comparator.reverseOrder())
+                            .thenComparing((TeacherInfoEntity item) -> calcDistanceKm(userLat, userLng, item.getTeacherWorkLatitude(), item.getTeacherWorkLongitude()),
+                                    Comparator.nullsLast(Double::compareTo))
+                            .thenComparing(TeacherInfoEntity::getTeacherViewCount, Comparator.nullsLast(Comparator.reverseOrder()))
+                            .thenComparing(TeacherInfoEntity::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .collect(Collectors.toList());
+            long total = filteredRecords.size();
+            if (filteredRecords.isEmpty()) {
+                return new PageResult<>(0, pageNo, pageSize, Collections.emptyList());
+            }
+            int fromIndex = (int) Math.max(0, Math.min(total, (pageNo - 1) * pageSize));
+            int toIndex = (int) Math.max(fromIndex, Math.min(total, fromIndex + pageSize));
+            List<TeacherInfoEntity> pageRecords = filteredRecords.subList(fromIndex, toIndex);
+            List<PublicTeacherListItemVO> voList = buildTeacherListVO(pageRecords, userLat, userLng);
+            return new PageResult<>(total, pageNo, pageSize, voList);
+        }
+
+        if (preferredRegionSort) {
+            List<TeacherInfoEntity> allRecords = teacherInfoMapper.selectList(wrapper);
+            if (allRecords.isEmpty()) {
+                return new PageResult<>(0, pageNo, pageSize, Collections.emptyList());
+            }
+            Map<String, Integer> regionMatchScoreMap = buildTeacherRegionMatchScoreMap(
+                    allRecords.stream().map(TeacherInfoEntity::getId).collect(Collectors.toList()),
+                    userRegionPreference);
+            Comparator<TeacherInfoEntity> defaultComparator = buildTeacherDefaultComparator(sortBy);
+            List<TeacherInfoEntity> sortedRecords = allRecords.stream()
+                    .sorted(Comparator
+                            .comparing((TeacherInfoEntity item) -> regionMatchScoreMap.getOrDefault(item.getId(), 0),
+                                    Comparator.reverseOrder())
+                            .thenComparing((TeacherInfoEntity item) -> calcDistanceKm(userLat, userLng, item.getTeacherWorkLatitude(), item.getTeacherWorkLongitude()),
+                                    Comparator.nullsLast(Double::compareTo))
+                            .thenComparing(defaultComparator))
+                    .collect(Collectors.toList());
+            long total = sortedRecords.size();
+            int fromIndex = (int) Math.max(0, Math.min(total, (pageNo - 1) * pageSize));
+            int toIndex = (int) Math.max(fromIndex, Math.min(total, fromIndex + pageSize));
+            List<TeacherInfoEntity> pageRecords = sortedRecords.subList(fromIndex, toIndex);
+            List<PublicTeacherListItemVO> voList = buildTeacherListVO(pageRecords, userLat, userLng);
+            return new PageResult<>(total, pageNo, pageSize, voList);
+        }
+
         Page<TeacherInfoEntity> result = teacherInfoMapper.selectPage(page, wrapper);
         List<TeacherInfoEntity> records = result.getRecords();
         if (records.isEmpty()) {
             return new PageResult<>(result.getTotal(), pageNo, pageSize, Collections.emptyList());
         }
+        List<PublicTeacherListItemVO> voList = buildTeacherListVO(records, userLat, userLng);
+        return new PageResult<>(result.getTotal(), pageNo, pageSize, voList);
+    }
+
+    private List<PublicTeacherListItemVO> buildTeacherListVO(List<TeacherInfoEntity> records, BigDecimal userLat, BigDecimal userLng) {
         List<String> teacherIds = records.stream().map(TeacherInfoEntity::getId).collect(Collectors.toList());
         List<String> userIds = records.stream().map(TeacherInfoEntity::getUserId).collect(Collectors.toList());
         Map<String, String> userNameMap = userMapper.selectBatchIds(userIds)
@@ -213,20 +326,31 @@ public class HomeQueryService {
             vo.setHistoryDealCount(stats == null ? 0 : stats.getHistoryDealCount());
             vo.setHireCount(stats == null ? 0 : stats.getHireCount());
             vo.setLastOrderTime(teacherLastOrderTimeMap.get(item.getId()));
-            vo.setSubjectNames(teacherSubjectNameMap.getOrDefault(item.getId(), Collections.emptyList()));
-            vo.setRegionNames(teacherRegionNameMap.getOrDefault(item.getId(), Collections.emptyList()));
+            vo.setSubjectNames(normalizeNameList(teacherSubjectNameMap.getOrDefault(item.getId(), Collections.emptyList())));
+            List<String> regionNames = normalizeNameList(teacherRegionNameMap.getOrDefault(item.getId(), Collections.emptyList()));
+            if (regionNames.isEmpty() && item.getTeacherWorkAddress() != null && !item.getTeacherWorkAddress().isBlank()) {
+                regionNames = Collections.singletonList(item.getTeacherWorkAddress());
+            }
+            vo.setRegionNames(regionNames);
             vo.setDistanceKm(calcDistanceKm(
                     userLat, userLng,
                     item.getTeacherWorkLatitude(),
                     item.getTeacherWorkLongitude()));
             return vo;
         }).collect(Collectors.toList());
-        if ("distance".equalsIgnoreCase(sortBy) && userLat != null && userLng != null) {
-            voList.sort(Comparator.comparing(
-                    PublicTeacherListItemVO::getDistanceKm,
-                    Comparator.nullsLast(Double::compareTo)));
+        return voList;
+    }
+
+    private List<String> normalizeNameList(List<String> names) {
+        if (names == null || names.isEmpty()) {
+            return Collections.emptyList();
         }
-        return new PageResult<>(result.getTotal(), pageNo, pageSize, voList);
+        return names.stream()
+                .filter(item -> item != null && !item.isBlank())
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toCollection(LinkedHashSet::new),
+                        ArrayList::new
+                ));
     }
 
     private Double calcDistanceKm(BigDecimal userLat, BigDecimal userLng, BigDecimal teacherLat, BigDecimal teacherLng) {
@@ -494,6 +618,158 @@ public class HomeQueryService {
             return "PENDING";
         }
         return teacher.getTeacherAuditStatus() == AuditStatusEnum.APPROVED.getCode() ? "VISIBLE" : "PENDING";
+    }
+
+    private UserRegionPreference resolveUserRegionPreferenceByLoginUser() {
+        LoginUser loginUser = LoginUserContext.get();
+        if (loginUser == null || loginUser.getId() == null || loginUser.getId().isBlank()) {
+            return null;
+        }
+        UserEntity userEntity = userMapper.selectById(loginUser.getId());
+        if (userEntity == null) {
+            return null;
+        }
+        UserRegionPreference preference = new UserRegionPreference();
+        preference.setRegionCode(trimToEmpty(userEntity.getUserRegionCode()));
+        preference.setDistrict(trimToEmpty(userEntity.getUserRegionDistrict()));
+        preference.setCity(trimToEmpty(userEntity.getUserRegionCity()));
+        preference.setProvince(trimToEmpty(userEntity.getUserRegionProvince()));
+        if (preference.getRegionCode().isBlank()
+                && preference.getDistrict().isBlank()
+                && preference.getCity().isBlank()
+                && preference.getProvince().isBlank()) {
+            return null;
+        }
+        return preference;
+    }
+
+    private Map<String, Integer> buildTeacherRegionMatchScoreMap(List<String> teacherIds, UserRegionPreference preference) {
+        if (teacherIds == null || teacherIds.isEmpty() || preference == null) {
+            return Collections.emptyMap();
+        }
+        List<TeacherRegionEntity> relations = teacherRegionMapper.selectList(new LambdaQueryWrapper<TeacherRegionEntity>()
+                .in(TeacherRegionEntity::getTeacherId, teacherIds));
+        if (relations.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<String> regionIds = relations.stream()
+                .map(TeacherRegionEntity::getRegionId)
+                .filter(id -> id != null && !id.isBlank())
+                .distinct()
+                .collect(Collectors.toList());
+        if (regionIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, RegionEntity> regionMap = regionMapper.selectBatchIds(regionIds).stream()
+                .collect(Collectors.toMap(RegionEntity::getId, item -> item, (a, b) -> a));
+        Map<String, Integer> result = new HashMap<>();
+        for (TeacherRegionEntity relation : relations) {
+            RegionEntity region = regionMap.get(relation.getRegionId());
+            int score = calcRegionMatchScore(region, preference);
+            Integer current = result.get(relation.getTeacherId());
+            if (current == null || score > current) {
+                result.put(relation.getTeacherId(), score);
+            }
+        }
+        for (String teacherId : teacherIds) {
+            result.putIfAbsent(teacherId, 0);
+        }
+        return result;
+    }
+
+    private int calcRegionMatchScore(RegionEntity region, UserRegionPreference preference) {
+        if (region == null || preference == null) {
+            return 0;
+        }
+        String preferredDistrict = normalizeRegionText(preference.getDistrict());
+        String preferredCity = normalizeRegionText(preference.getCity());
+        String preferredProvince = normalizeRegionText(preference.getProvince());
+        String regionDistrict = normalizeRegionText(region.getRegionName());
+        String regionCity = normalizeRegionText(region.getRegionCity());
+        String regionProvince = normalizeRegionText(region.getRegionProvince());
+        if (!preferredDistrict.isBlank() && preferredDistrict.equals(regionDistrict)) {
+            return 3;
+        }
+        if (!preferredCity.isBlank() && preferredCity.equals(regionCity)) {
+            return 2;
+        }
+        if (!preferredProvince.isBlank() && preferredProvince.equals(regionProvince)) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private String trimToEmpty(String text) {
+        return text == null ? "" : text.trim();
+    }
+
+    private String normalizeRegionText(String text) {
+        return trimToEmpty(text)
+                .replace("特别行政区", "")
+                .replace("自治州", "")
+                .replace("自治县", "")
+                .replace("地区", "")
+                .replace("省", "")
+                .replace("市", "")
+                .replace("区", "")
+                .replace("县", "");
+    }
+
+    private static final class UserRegionPreference {
+        private String regionCode;
+        private String province;
+        private String city;
+        private String district;
+
+        public String getRegionCode() {
+            return regionCode;
+        }
+
+        public void setRegionCode(String regionCode) {
+            this.regionCode = regionCode;
+        }
+
+        public String getProvince() {
+            return province;
+        }
+
+        public void setProvince(String province) {
+            this.province = province;
+        }
+
+        public String getCity() {
+            return city;
+        }
+
+        public void setCity(String city) {
+            this.city = city;
+        }
+
+        public String getDistrict() {
+            return district;
+        }
+
+        public void setDistrict(String district) {
+            this.district = district;
+        }
+    }
+
+    private Comparator<TeacherInfoEntity> buildTeacherDefaultComparator(String sortBy) {
+        if ("latest".equalsIgnoreCase(sortBy)) {
+            return Comparator
+                    .comparing(TeacherInfoEntity::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(TeacherInfoEntity::getTeacherViewCount, Comparator.nullsLast(Comparator.reverseOrder()));
+        }
+        if ("success".equalsIgnoreCase(sortBy)) {
+            return Comparator
+                    .comparing(TeacherInfoEntity::getTeacherSuccessCount, Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(TeacherInfoEntity::getTeacherViewCount, Comparator.nullsLast(Comparator.reverseOrder()))
+                    .thenComparing(TeacherInfoEntity::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder()));
+        }
+        return Comparator
+                .comparing(TeacherInfoEntity::getTeacherViewCount, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(TeacherInfoEntity::getTeacherSuccessCount, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(TeacherInfoEntity::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder()));
     }
 
     private List<DispatchPublicListItemVO> buildDispatchCards(List<DispatchRecordEntity> latestDispatches) {

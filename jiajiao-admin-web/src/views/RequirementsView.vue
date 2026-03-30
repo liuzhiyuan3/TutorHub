@@ -6,6 +6,9 @@ import StatusTag from '../components/admin/StatusTag.vue'
 
 const list = ref([])
 const status = ref('')
+const pageNo = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
 const detailVisible = ref(false)
 const current = ref(null)
 const loading = ref(false)
@@ -15,18 +18,59 @@ const relationLoading = ref(false)
 const parentProfile = ref(null)
 const teacherProfile = ref(null)
 
+function canAudit(item) {
+  return Number(item?.requirementAuditStatus ?? 0) === 0
+}
+
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    const data = await pageRequirements({ pageNo: 1, pageSize: 50, status: status.value || undefined })
+    const data = await pageRequirements({ pageNo: pageNo.value, pageSize: pageSize.value, status: status.value || undefined })
     list.value = data.records || []
+    total.value = Number(data.total || 0)
   } catch (e) {
     error.value = e.message || '需求列表加载失败'
     list.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
+}
+
+function handleSearch() {
+  pageNo.value = 1
+  load()
+}
+
+function totalPages() {
+  return Math.max(1, Math.ceil(total.value / pageSize.value))
+}
+
+function canPrevPage() {
+  return pageNo.value > 1
+}
+
+function canNextPage() {
+  return pageNo.value < totalPages()
+}
+
+function goPrevPage() {
+  if (!canPrevPage() || loading.value) return
+  pageNo.value -= 1
+  load()
+}
+
+function goNextPage() {
+  if (!canNextPage() || loading.value) return
+  pageNo.value += 1
+  load()
+}
+
+function emptyTip() {
+  if (!status.value) return '当前暂无需求数据'
+  const map = { 0: '暂无待接单需求', 1: '暂无已接单需求', 2: '暂无已完成需求', 3: '暂无已取消需求' }
+  return map[Number(status.value)] || '当前筛选条件下暂无需求'
 }
 
 async function doAudit(item, auditStatus) {
@@ -64,8 +108,14 @@ onMounted(load)
 
 <template>
   <div class="page-block">
-    <h3 class="section-title">需求管理</h3>
-    <p class="section-subtitle">按状态筛选需求并执行审核流转</p>
+    <div class="page-heading">
+      <h3 class="section-title">需求管理</h3>
+      <p class="section-subtitle">按状态筛选并审核需求，优先处理可成交意向单</p>
+      <div class="hint-chip-row">
+        <span class="hint-chip">总数 {{ total }}</span>
+        <span class="hint-chip">当前页 {{ pageNo }}/{{ totalPages() }}</span>
+      </div>
+    </div>
     <div class="panel panel-mt-14">
       <div class="panel-head">
         <strong>筛选条件</strong>
@@ -79,7 +129,7 @@ onMounted(load)
             <option value="2">已完成</option>
             <option value="3">已取消</option>
           </select>
-          <button class="btn col-span-1" @click="load">筛选</button>
+          <button class="btn col-span-1" @click="handleSearch">筛选</button>
         </div>
       </div>
     </div>
@@ -93,41 +143,50 @@ onMounted(load)
     <div class="panel panel-mt-14">
       <div class="panel-head">
         <strong>需求列表</strong>
-        <span class="table-meta">共 {{ list.length }} 条</span>
+        <span class="table-meta">共 {{ total }} 条</span>
       </div>
       <div class="panel-body panel-body-pt-4">
-        <table class="table">
-          <thead><tr><th>标题</th><th>年级</th><th>薪资</th><th>状态</th><th>审核</th><th>地址</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr v-if="loading"><td colspan="7"><span class="skeleton" /></td></tr>
-            <tr v-for="item in list" :key="item.id">
-              <td>{{ item.requirementTitle }}</td>
-              <td>{{ item.requirementGrade }}</td>
-              <td>{{ item.requirementSalary }}</td>
-              <td>
-                <StatusTag
-                  :type="item.requirementStatus === 2 ? 'success' : item.requirementStatus === 3 ? 'error' : 'pending'"
-                  :text="['待接单', '已接单', '已完成', '已取消'][item.requirementStatus || 0]"
-                />
-              </td>
-              <td>
-                <StatusTag
-                  :type="item.requirementAuditStatus === 1 ? 'success' : item.requirementAuditStatus === 2 ? 'error' : 'pending'"
-                  :text="['待审', '通过', '拒绝'][item.requirementAuditStatus || 0]"
-                />
-              </td>
-              <td>{{ item.requirementAddress }}</td>
-              <td class="action-group">
-                <button class="btn ghost" @click="showDetail(item)">详情</button>
-                <button class="btn" @click="doAudit(item, 1)">通过</button>
-                <button class="btn secondary" @click="doAudit(item, 2)">拒绝</button>
-              </td>
-            </tr>
-            <tr v-if="!list.length">
-              <td colspan="7"><div class="empty-state">暂无需求数据</div></td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>标题</th><th>年级</th><th>薪资</th><th>状态</th><th>审核</th><th>地址</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr v-if="loading"><td colspan="7"><span class="skeleton" /></td></tr>
+              <tr v-for="item in list" :key="item.id">
+                <td>{{ item.requirementTitle }}</td>
+                <td>{{ item.requirementGrade }}</td>
+                <td>{{ item.requirementSalary }}</td>
+                <td>
+                  <StatusTag
+                    :type="item.requirementStatus === 2 ? 'success' : item.requirementStatus === 3 ? 'error' : 'pending'"
+                    :text="['待接单', '已接单', '已完成', '已取消'][item.requirementStatus || 0]"
+                  />
+                </td>
+                <td>
+                  <StatusTag
+                    :type="item.requirementAuditStatus === 1 ? 'success' : item.requirementAuditStatus === 2 ? 'error' : 'pending'"
+                    :text="['待审', '通过', '拒绝'][item.requirementAuditStatus || 0]"
+                  />
+                </td>
+                <td>{{ item.requirementAddress }}</td>
+                <td class="action-group action-group--table">
+                  <button class="btn ghost sm" @click="showDetail(item)">详情</button>
+                  <button class="btn sm" :disabled="!canAudit(item)" @click="doAudit(item, 1)">通过</button>
+                  <button class="btn secondary sm" :disabled="!canAudit(item)" @click="doAudit(item, 2)">拒绝</button>
+                </td>
+              </tr>
+              <tr v-if="!loading && !list.length && !error">
+                <td colspan="7"><div class="empty-state">{{ emptyTip() }}</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pager-row">
+          <span class="table-meta">第 {{ pageNo }} / {{ totalPages() }} 页</span>
+          <div class="pager-actions">
+            <button class="btn ghost" :disabled="!canPrevPage() || loading" @click="goPrevPage">上一页</button>
+            <button class="btn ghost" :disabled="!canNextPage() || loading" @click="goNextPage">下一页</button>
+          </div>
+        </div>
       </div>
     </div>
     <DrawerPanel :visible="detailVisible" title="需求详情" @close="detailVisible = false">
@@ -169,13 +228,42 @@ onMounted(load)
 </template>
 
 <style scoped>
+.page-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hint-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hint-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--text-sub);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
 .detail-grid {
   display: grid;
   gap: 10px;
 }
-.table-meta {
-  color: var(--text-sub);
-  font-size: 13px;
+.pager-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pager-actions {
+  display: flex;
+  gap: 8px;
+}
+.action-group--table {
+  gap: 6px;
 }
 </style>
 

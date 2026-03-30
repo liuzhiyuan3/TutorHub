@@ -169,6 +169,56 @@
 
 建议后续把这些域按“请求/响应示例”补全到本文件。
 
+### 4.1 地理逆解析（LocationController）
+
+- `POST /api/location/reverse`
+- 请求体：
+
+```json
+{
+  "latitude": 31.2304,
+  "longitude": 121.4737,
+  "amapKey": "可选，客户端透传；为空时使用后端 AMAP_WEB_KEY（兼容旧 qqMapKey）"
+}
+```
+
+### 4.2 首页筛选元数据（HomeController）
+
+- `GET /api/home/filters`
+- 响应体 `data` 在保留既有字段 `subjects/regions/schools` 的同时，新增 `regionTree`：
+
+```json
+{
+  "subjects": [],
+  "regions": [],
+  "schools": [],
+  "regionTree": [
+    {
+      "name": "新疆维吾尔自治区",
+      "cities": [
+        {
+          "name": "乌鲁木齐市",
+          "districts": [
+            { "id": "r1", "code": "REG_XJ_URM_TS", "name": "天山区" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+- 响应体 `data`：
+
+```json
+{
+  "address": "上海市黄浦区...",
+  "province": "上海市",
+  "city": "上海市",
+  "district": "黄浦区"
+}
+```
+
 ## 5. 变更流程（强制）
 
 接口变更（新增/删除/字段修改）时，必须同步做以下动作：
@@ -192,4 +242,3 @@
 - 分页接口在空数据与越界页码时表现稳定
 - 前端页面对 loading、empty、error 状态处理正常
 - 日志中无明显后端异常堆栈
-

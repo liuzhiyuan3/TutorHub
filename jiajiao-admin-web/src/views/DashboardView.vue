@@ -4,6 +4,8 @@ import { homeFilters, pageOrders, pageRequirements, pageTeachers, statsBusiness,
 import ChartPanel from '../components/admin/ChartPanel.vue'
 
 const rangeDays = ref(7)
+const granularity = ref('day')
+const compareMode = ref(false)
 const loading = ref(false)
 const error = ref('')
 
@@ -27,6 +29,54 @@ const bizCards = ref([
   { key: 'roleMenuTotal', title: '角色菜单绑定', value: 0 }
 ])
 
+const metricOptions = [
+  { key: 'orderCount', label: '新增订单', color: '#3b82f6', area: 'rgba(59,130,246,0.18)' },
+  { key: 'requirementCount', label: '新增需求', color: '#10b981', area: 'rgba(16,185,129,0.14)' }
+]
+const selectedMetrics = ref(['orderCount', 'requirementCount'])
+const visibleCharts = ref({
+  trend: true,
+  status: true,
+  region: true,
+  rank: true
+})
+
+const granularityLabel = computed(() => {
+  if (granularity.value === 'month') return '月趋势'
+  if (granularity.value === 'week') return '周趋势'
+  return '日趋势'
+})
+
+const selectedMetricSeries = computed(() => {
+  const rows = trendRows.value || []
+  const series = []
+  metricOptions.forEach((metric) => {
+    if (!selectedMetrics.value.includes(metric.key)) return
+    series.push({
+      name: metric.label,
+      type: 'line',
+      smooth: true,
+      data: rows.map((item) => Number(item[metric.key] || 0)),
+      lineStyle: { color: metric.color, width: 3 },
+      itemStyle: { color: metric.color },
+      areaStyle: { color: metric.area }
+    })
+    if (compareMode.value) {
+      const compareRows = rows.map((item, index) => (index === 0 ? null : Number(rows[index - 1][metric.key] || 0)))
+      series.push({
+        name: `${metric.label}-环比基线`,
+        type: 'line',
+        smooth: true,
+        data: compareRows,
+        lineStyle: { color: metric.color, type: 'dashed', width: 2 },
+        itemStyle: { color: metric.color, opacity: 0.6 },
+        symbol: 'none'
+      })
+    }
+  })
+  return series
+})
+
 const lineOption = computed(() => ({
   tooltip: { trigger: 'axis' },
   legend: { top: 0, textStyle: { color: '#4a6488' } },
@@ -45,24 +95,7 @@ const lineOption = computed(() => ({
     axisLabel: { color: '#6782a7' }
   },
   series: [
-    {
-      name: '新增订单',
-      type: 'line',
-      smooth: true,
-      data: trendRows.value.map((item) => item.orderCount),
-      lineStyle: { color: '#3b82f6', width: 3 },
-      itemStyle: { color: '#3b82f6' },
-      areaStyle: { color: 'rgba(59,130,246,0.18)' }
-    },
-    {
-      name: '新增需求',
-      type: 'line',
-      smooth: true,
-      data: trendRows.value.map((item) => item.requirementCount),
-      lineStyle: { color: '#10b981', width: 3 },
-      itemStyle: { color: '#10b981' },
-      areaStyle: { color: 'rgba(16,185,129,0.14)' }
-    }
+    ...selectedMetricSeries.value
   ]
 }))
 
@@ -131,7 +164,7 @@ const rankOption = computed(() => ({
   }]
 }))
 
-const lineEmpty = computed(() => trendRows.value.length === 0)
+const lineEmpty = computed(() => trendRows.value.length === 0 || selectedMetricSeries.value.length === 0)
 const statusEmpty = computed(() => statusRows.value.every((item) => Number(item.value || 0) === 0))
 const regionEmpty = computed(() => regionRows.value.length === 0)
 const rankEmpty = computed(() => rankRows.value.length === 0)
@@ -173,6 +206,26 @@ function buildSubjectRank(requirements, subjectOptions) {
     .slice(0, 8)
 }
 
+function normalizeTrendRows(trend) {
+  const orderTrendMap = {}
+  const requirementTrendMap = {}
+  ;(trend?.orderTrend || []).forEach((item) => {
+    orderTrendMap[item.date] = Number(item.value || 0)
+  })
+  ;(trend?.requirementTrend || []).forEach((item) => {
+    requirementTrendMap[item.date] = Number(item.value || 0)
+  })
+  const labels = Array.from(new Set([
+    ...Object.keys(orderTrendMap),
+    ...Object.keys(requirementTrendMap)
+  ])).sort()
+  return labels.map((label) => ({
+    date: label,
+    orderCount: Number(orderTrendMap[label] || 0),
+    requirementCount: Number(requirementTrendMap[label] || 0)
+  }))
+}
+
 async function load() {
   loading.value = true
   error.value = ''
@@ -186,7 +239,7 @@ async function load() {
     const [overview, business, trend, teacherPage, requirementPage, orderPage, filters] = await Promise.all([
       statsOverview(),
       statsBusiness(),
-      statsTrend({ startDate: startDateText, endDate: endDateText }),
+      statsTrend({ startDate: startDateText, endDate: endDateText, granularity: granularity.value }),
       pageTeachers({ pageNo: 1, pageSize: 200 }),
       pageRequirements({ pageNo: 1, pageSize: 500 }),
       pageOrders({ pageNo: 1, pageSize: 500 }),
@@ -200,15 +253,7 @@ async function load() {
       return { ...card, value: Number(overview[card.key] || 0) }
     })
 
-    const orderTrendMap = {}
-    ;(trend?.orderTrend || []).forEach((item) => {
-      orderTrendMap[item.date] = Number(item.value || 0)
-    })
-    trendRows.value = (trend?.requirementTrend || []).map((item) => ({
-      date: item.date,
-      requirementCount: Number(item.value || 0),
-      orderCount: Number(orderTrendMap[item.date] || 0)
-    }))
+    trendRows.value = normalizeTrendRows(trend)
 
     regionRows.value = (trend?.regionDistribution || []).map((item) => ({
       name: item.regionName || '未命名',
@@ -233,20 +278,46 @@ onMounted(load)
 <template>
   <div class="page-block">
     <h3 class="section-title">运营概览</h3>
-    <p class="section-subtitle">总览卡片、趋势、分布与排行统一展示，支持按时间维度快速巡检</p>
+    <p class="section-subtitle">总览卡片、趋势、分布与排行统一展示</p>
 
     <div class="panel panel-mt-14">
       <div class="panel-head">
         <strong>时间范围</strong>
+        <span class="table-meta">默认展示最近 {{ rangeDays }} 天（{{ granularityLabel }}）</span>
       </div>
       <div class="panel-body">
-        <div class="toolbar toolbar-no-bottom">
+        <div class="toolbar toolbar-no-bottom dashboard-toolbar">
           <select v-model.number="rangeDays" class="select col-span-2">
             <option :value="7">近7天</option>
             <option :value="15">近15天</option>
             <option :value="30">近30天</option>
           </select>
+          <select v-model="granularity" class="select col-span-2">
+            <option value="day">日趋势</option>
+            <option value="week">周趋势</option>
+            <option value="month">月趋势</option>
+          </select>
           <button class="btn col-span-1" :disabled="loading" @click="load">刷新看板</button>
+        </div>
+        <div class="dashboard-controls">
+          <div class="control-group">
+            <span class="control-label">趋势指标</span>
+            <label v-for="item in metricOptions" :key="item.key" class="control-item">
+              <input v-model="selectedMetrics" type="checkbox" :value="item.key" />
+              <span>{{ item.label }}</span>
+            </label>
+            <label class="control-item">
+              <input v-model="compareMode" type="checkbox" />
+              <span>显示环比基线</span>
+            </label>
+          </div>
+          <div class="control-group">
+            <span class="control-label">图表显示</span>
+            <label class="control-item"><input v-model="visibleCharts.trend" type="checkbox" /> <span>业务趋势</span></label>
+            <label class="control-item"><input v-model="visibleCharts.status" type="checkbox" /> <span>订单状态</span></label>
+            <label class="control-item"><input v-model="visibleCharts.region" type="checkbox" /> <span>区域分布</span></label>
+            <label class="control-item"><input v-model="visibleCharts.rank" type="checkbox" /> <span>学科排行</span></label>
+          </div>
         </div>
       </div>
     </div>
@@ -279,8 +350,9 @@ onMounted(load)
 
     <div class="charts-grid">
       <ChartPanel
+        v-if="visibleCharts.trend"
         title="业务趋势"
-        subtitle="新增订单 / 新增需求（日趋势）"
+        :subtitle="`指标趋势（${granularityLabel}）`"
         :loading="loading"
         :option="lineOption"
         :height="320"
@@ -288,6 +360,7 @@ onMounted(load)
         empty-text="暂无趋势数据"
       />
       <ChartPanel
+        v-if="visibleCharts.status"
         title="订单状态分布"
         subtitle="待确认 / 进行中 / 完成 / 取消"
         :loading="loading"
@@ -297,6 +370,7 @@ onMounted(load)
         empty-text="暂无订单状态数据"
       />
       <ChartPanel
+        v-if="visibleCharts.region"
         title="区域需求分布"
         subtitle="按区域统计需求数量"
         :loading="loading"
@@ -306,6 +380,7 @@ onMounted(load)
         empty-text="暂无区域需求数据"
       />
       <ChartPanel
+        v-if="visibleCharts.rank"
         title="学科需求排行"
         subtitle="Top 8 热门学科需求"
         :loading="loading"
@@ -319,13 +394,42 @@ onMounted(load)
 </template>
 
 <style scoped>
+.dashboard-toolbar {
+  grid-template-columns: 1.2fr 1fr auto;
+}
+.dashboard-controls {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.control-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.control-label {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+.control-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-main);
+}
 .charts-grid {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.6fr 1fr;
   gap: 12px;
 }
 @media (max-width: 1200px) {
+  .dashboard-toolbar {
+    grid-template-columns: 1fr;
+  }
   .charts-grid {
     grid-template-columns: 1fr;
   }
@@ -337,7 +441,7 @@ onMounted(load)
   padding: 12px;
 }
 .metric-value-compact {
-  font-size: 22px;
+  font-size: 21px;
   margin-top: 6px;
 }
 @media (max-width: 1400px) {

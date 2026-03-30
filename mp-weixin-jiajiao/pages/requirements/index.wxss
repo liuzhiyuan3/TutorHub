@@ -18,23 +18,29 @@
 .quick-filter-row {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  justify-content: space-between;
+  gap: 8rpx;
   margin-top: 8rpx;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
-.quick-filter-row picker {
-  flex: 1 1 calc(50% - 5rpx);
+.quick-filter-cell {
+  flex: 1 1 0;
   min-width: 0;
+}
+
+.quick-filter-cell picker {
+  display: block;
+  width: 100%;
 }
 
 .quick-filter-item {
   width: 100%;
   text-align: center;
-  padding: 16rpx 4rpx;
+  padding: 12rpx 8rpx;
   color: #334862;
-  font-size: 24rpx;
-  min-height: 78rpx;
+  font-size: 26rpx;
+  min-height: 68rpx;
   border: 1rpx solid #dce6f8;
   border-radius: 14rpx;
   background: #fff;
@@ -43,11 +49,23 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quick-filter-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .filter-icon {
-  font-size: 22rpx;
+  font-size: 24rpx;
   margin-right: 4rpx;
+  flex: 0 0 auto;
 }
 
 .quick-filter-item.selected {
@@ -71,9 +89,10 @@
 }
 
 .arrow {
-  margin-left: 6rpx;
-  font-size: 16rpx;
+  margin-left: 4rpx;
+  font-size: 18rpx;
   color: #7f8fa5;
+  flex: 0 0 auto;
 }
 
 .subject-panel-mask {
@@ -96,6 +115,45 @@
   border-radius: 24rpx;
   overflow: hidden;
   box-shadow: 0 28rpx 72rpx rgba(30, 70, 140, 0.24);
+}
+
+.region-panel {
+  max-height: 680rpx;
+}
+
+.region-cascade-row {
+  display: flex;
+  gap: 12rpx;
+  padding: 16rpx 20rpx 8rpx;
+}
+
+.region-cascade-row picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.region-cascade-item {
+  height: 66rpx;
+  border: 1rpx solid #dce6f8;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14rpx;
+  font-size: 24rpx;
+  color: #355175;
+  background: #f8fbff;
+  box-sizing: border-box;
+}
+
+.region-district-scroll {
+  max-height: 420rpx;
+  padding: 8rpx 18rpx 20rpx;
+}
+
+.region-district-wrap {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .subject-panel-head {
@@ -202,6 +260,21 @@
   font-size: 30rpx;
   color: #1f3f72;
   font-weight: 700;
+}
+
+.title-with-avatar {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.teacher-avatar {
+  width: 200rpx;
+  height: 230rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid #d9e6fb;
+  background: #f1f6ff;
+  flex-shrink: 0;
 }
 
 .req-card .btn {

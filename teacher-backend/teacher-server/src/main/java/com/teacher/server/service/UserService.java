@@ -56,6 +56,9 @@ public class UserService {
         if (user == null) {
             throw new BusinessException("用户不存在");
         }
+        if (loginUser.getUserType() != null) {
+            user.setUserType(loginUser.getUserType());
+        }
         user.setUserPassword(null);
         return user;
     }
@@ -165,7 +168,7 @@ public class UserService {
         if (isBlank(user.getUserPortrait())) {
             missingFields.add("avatarUrl");
         }
-        String role = user.getUserType() != null && user.getUserType() == 1 ? "teacher" : "parent";
+        String role = resolveRole(loginUser.getUserType(), user.getUserType());
 
         if ("teacher".equals(role)) {
             TeacherInfoEntity teacherInfo = findTeacherInfoByUserId(user.getId());
@@ -210,7 +213,7 @@ public class UserService {
         if (user == null || user.getUserDeleteStatus() == 1) {
             throw new BusinessException("用户不存在");
         }
-        String role = user.getUserType() != null && user.getUserType() == 1 ? "teacher" : "parent";
+        String role = resolveRole(loginUser.getUserType(), user.getUserType());
         String expectedRole = trimToEmpty(request.getRole());
         if (!expectedRole.isBlank() && !role.equalsIgnoreCase(expectedRole)) {
             throw new BusinessException("身份已变化，请刷新后重试");
@@ -235,7 +238,7 @@ public class UserService {
             teacherInfoMapper.updateById(teacherInfo);
         }
 
-        UserProfileCompletenessVO checkBeforeUpdate = profileCompletenessByUser(user);
+        UserProfileCompletenessVO checkBeforeUpdate = profileCompletenessByUser(user, role);
         boolean ready = checkBeforeUpdate.getReady() != null && checkBeforeUpdate.getReady();
         user.setProfileCompleted(ready ? 1 : 0);
         user.setLastProfileCompleteTime(ready ? now : user.getLastProfileCompleteTime());
@@ -329,7 +332,7 @@ public class UserService {
         return profile;
     }
 
-    private UserProfileCompletenessVO profileCompletenessByUser(UserEntity user) {
+    private UserProfileCompletenessVO profileCompletenessByUser(UserEntity user, String role) {
         List<String> missingFields = new ArrayList<>();
         if (isBlank(user.getUserName())) {
             missingFields.add("nickName");
@@ -337,7 +340,6 @@ public class UserService {
         if (isBlank(user.getUserPortrait())) {
             missingFields.add("avatarUrl");
         }
-        String role = user.getUserType() != null && user.getUserType() == 1 ? "teacher" : "parent";
         if ("teacher".equals(role)) {
             TeacherInfoEntity teacherInfo = findTeacherInfoByUserId(user.getId());
             if (teacherInfo == null) {
@@ -361,6 +363,14 @@ public class UserService {
         vo.setUserPortrait(user.getUserPortrait());
         vo.setMissingFields(missingFields);
         return vo;
+    }
+
+    private String resolveRole(Integer sessionUserType, Integer dbUserType) {
+        Integer effectiveUserType = sessionUserType;
+        if (effectiveUserType == null) {
+            effectiveUserType = dbUserType;
+        }
+        return effectiveUserType != null && effectiveUserType == 1 ? "teacher" : "parent";
     }
 
     private TeacherInfoEntity upsertTeacherProfile(String userId, UserProfileCompleteRequest request, LocalDateTime now) {

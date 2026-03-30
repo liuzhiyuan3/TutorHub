@@ -382,5 +382,31 @@ public class ContentService {
         if (entity.getRegionCode() == null || entity.getRegionCode().isBlank()) {
             throw new BusinessException("区域编码不能为空");
         }
+        if (entity.getRegionProvince() == null || entity.getRegionProvince().isBlank()) {
+            throw new BusinessException("区域省份不能为空");
+        }
+        if (entity.getRegionCity() == null || entity.getRegionCity().isBlank()) {
+            throw new BusinessException("区域城市不能为空");
+        }
+        LambdaQueryWrapper<RegionEntity> codeWrapper = new LambdaQueryWrapper<RegionEntity>()
+                .eq(RegionEntity::getRegionCode, entity.getRegionCode())
+                .eq(RegionEntity::getRegionDeleteStatus, 0);
+        if (entity.getId() != null && !entity.getId().isBlank()) {
+            codeWrapper.ne(RegionEntity::getId, entity.getId());
+        }
+        if (regionMapper.selectCount(codeWrapper) > 0) {
+            throw new BusinessException("区域编码已存在");
+        }
+        LambdaQueryWrapper<RegionEntity> comboWrapper = new LambdaQueryWrapper<RegionEntity>()
+                .eq(RegionEntity::getRegionProvince, entity.getRegionProvince())
+                .eq(RegionEntity::getRegionCity, entity.getRegionCity())
+                .eq(RegionEntity::getRegionName, entity.getRegionName())
+                .eq(RegionEntity::getRegionDeleteStatus, 0);
+        if (entity.getId() != null && !entity.getId().isBlank()) {
+            comboWrapper.ne(RegionEntity::getId, entity.getId());
+        }
+        if (regionMapper.selectCount(comboWrapper) > 0) {
+            throw new BusinessException("同省同市下区域名称已存在");
+        }
     }
 }

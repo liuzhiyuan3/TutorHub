@@ -1,9 +1,14 @@
 const sessionState = require('./session-state')
+const runtimeConfig = require('../config/runtime')
 
 function resolveBaseUrl() {
   const app = getApp && getApp()
   const fromGlobal = app && app.globalData ? app.globalData.baseUrl : ''
-  return String(fromGlobal || 'http://localhost:8080').trim()
+  if (String(fromGlobal || '').trim()) {
+    return String(fromGlobal).trim()
+  }
+  const fallback = runtimeConfig.getRuntimeConfig ? runtimeConfig.getRuntimeConfig() : runtimeConfig
+  return String((fallback && fallback.baseUrl) || 'http://127.0.0.1:8080').trim()
 }
 
 function clearLoginState() {

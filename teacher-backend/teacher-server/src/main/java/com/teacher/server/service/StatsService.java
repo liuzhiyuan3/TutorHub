@@ -15,7 +15,13 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class StatsService {
@@ -32,17 +38,22 @@ public class StatsService {
     }
 
     public StatsOverviewVO overview(LocalDate startDate, LocalDate endDate) {
+        return overview(startDate, endDate, "day");
+    }
+
+    public StatsOverviewVO overview(LocalDate startDate, LocalDate endDate, String granularity) {
         if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
             endDate = LocalDate.now();
             startDate = endDate.minusDays(6);
         }
+        String normalizedGranularity = normalizeGranularity(granularity);
         Map<String, Long> totals = new HashMap<>();
         totals.put("userTotal", userMapper.selectCount(new LambdaQueryWrapper<UserEntity>().eq(UserEntity::getUserDeleteStatus, 0)));
         totals.put("orderTotal", orderMapper.selectCount(new LambdaQueryWrapper<OrderEntity>().eq(OrderEntity::getOrderDeleteStatus, 0)));
         totals.put("requirementTotal", requirementMapper.selectCount(new LambdaQueryWrapper<RequirementEntity>().eq(RequirementEntity::getRequirementDeleteStatus, 0)));
 
-        List<Map<String, Object>> orderTrend = new ArrayList<>();
-        List<Map<String, Object>> requirementTrend = new ArrayList<>();
+        Map<String, Long> orderBucketCounter = new LinkedHashMap<>();
+        Map<String, Long> requirementBucketCounter = new LinkedHashMap<>();
         LocalDate cursor = startDate;
         while (!cursor.isAfter(endDate)) {
             LocalDateTime from = cursor.atStartOfDay();
@@ -53,10 +64,13 @@ public class StatsService {
             long requirementCnt = requirementMapper.selectCount(new LambdaQueryWrapper<RequirementEntity>()
                     .between(RequirementEntity::getCreateTime, from, to)
                     .eq(RequirementEntity::getRequirementDeleteStatus, 0));
-            orderTrend.add(point(cursor, orderCnt));
-            requirementTrend.add(point(cursor, requirementCnt));
+            String bucket = toBucket(cursor, normalizedGranularity);
+            orderBucketCounter.put(bucket, orderBucketCounter.getOrDefault(bucket, 0L) + orderCnt);
+            requirementBucketCounter.put(bucket, requirementBucketCounter.getOrDefault(bucket, 0L) + requirementCnt);
             cursor = cursor.plusDays(1);
         }
+        List<Map<String, Object>> orderTrend = toTrendPoints(orderBucketCounter);
+        List<Map<String, Object>> requirementTrend = toTrendPoints(requirementBucketCounter);
 
         List<RegionEntity> regions = regionMapper.selectList(new LambdaQueryWrapper<RegionEntity>()
                 .eq(RegionEntity::getRegionDeleteStatus, 0)
@@ -76,9 +90,38 @@ public class StatsService {
         return new StatsOverviewVO(totals, orderTrend, requirementTrend, regionDistribution);
     }
 
-    private Map<String, Object> point(LocalDate date, long value) {
+    private List<Map<String, Object>> toTrendPoints(Map<String, Long> counter) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : counter.entrySet()) {
+            rows.add(point(entry.getKey(), entry.getValue()));
+        }
+        return rows;
+    }
+
+    private String normalizeGranularity(String granularity) {
+        String value = granularity == null ? "" : granularity.trim().toLowerCase();
+        if ("week".equals(value) || "month".equals(value) || "day".equals(value)) {
+            return value;
+        }
+        return "day";
+    }
+
+    private String toBucket(LocalDate date, String granularity) {
+        if ("month".equals(granularity)) {
+            return String.format("%d-%02d", date.getYear(), date.getMonthValue());
+        }
+        if ("week".equals(granularity)) {
+            WeekFields weekFields = WeekFields.of(Locale.CHINA);
+            int weekYear = date.get(weekFields.weekBasedYear());
+            int week = date.get(weekFields.weekOfWeekBasedYear());
+            return String.format("%d-W%02d", weekYear, week);
+        }
+        return date.toString();
+    }
+
+    private Map<String, Object> point(String date, long value) {
         Map<String, Object> map = new HashMap<>();
-        map.put("date", date.toString());
+        map.put("date", date);
         map.put("value", value);
         return map;
     }

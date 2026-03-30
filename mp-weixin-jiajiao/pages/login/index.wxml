@@ -10,6 +10,7 @@
       </view>
       <view class="welcome-title">欢迎登录</view>
       <view class="welcome-sub">优先推荐微信一键登录，也支持账号密码登录</view>
+      <view class="welcome-safe-tip">首次登录建议使用微信授权，体验更流畅</view>
     </view>
 
     <view class="login-card">
@@ -33,17 +34,21 @@
           <text class="i i-wechat entry-icon"></text>
           <view class="entry-title">微信授权登录</view>
         </view>
-        <picker mode="selector" range="{{userTypeOptions}}" range-key="label" bindchange="onTypeChange">
-          <view class="picker-field identity-picker">当前身份：{{currentUserTypeLabel}}</view>
-        </picker>
-        <van-button
-          type="success"
-          custom-class="primary-login-btn"
-          loading="{{submitting}}"
-          bind:click="openConfirmSheet"
-        >
-          {{primaryBtnText}}
-        </van-button>
+        <view class="identity-tabs">
+          <view class="identity-tab {{form.userType === 0 ? 'identity-tab-active' : ''}}" data-value="0" bindtap="onTypeTap">家长</view>
+          <view class="identity-tab {{form.userType === 1 ? 'identity-tab-active' : ''}}" data-value="1" bindtap="onTypeTap">教员</view>
+        </view>
+        <view class="identity-summary">当前身份：{{currentUserTypeLabel}}</view>
+        <view class="wechat-btn-wrap">
+          <van-button
+            type="success"
+            custom-class="primary-login-btn"
+            loading="{{submitting}}"
+            bind:click="confirmWechatLogin"
+          >
+            {{primaryBtnText}}
+          </van-button>
+        </view>
         <view class="entry-tip">点击按钮后将拉起微信授权流程</view>
         <view class="entry-link" bindtap="switchToAccountLogin">使用账号密码登录</view>
       </view>
@@ -53,9 +58,11 @@
           <text class="i i-profile entry-icon"></text>
           <view class="entry-title">账号密码登录</view>
         </view>
-        <picker mode="selector" range="{{userTypeOptions}}" range-key="label" bindchange="onTypeChange">
-          <view class="picker-field identity-picker">当前身份：{{currentUserTypeLabel}}</view>
-        </picker>
+        <view class="identity-tabs">
+          <view class="identity-tab {{form.userType === 0 ? 'identity-tab-active' : ''}}" data-value="0" bindtap="onTypeTap">家长</view>
+          <view class="identity-tab {{form.userType === 1 ? 'identity-tab-active' : ''}}" data-value="1" bindtap="onTypeTap">教员</view>
+        </view>
+        <view class="identity-summary">当前身份：{{currentUserTypeLabel}}</view>
         <van-field
           custom-class="assist-field"
           label="账号"
@@ -75,14 +82,16 @@
           border="{{false}}"
           bind:input="onInput"
         />
-        <van-button
-          type="primary"
-          loading="{{submitting}}"
-          custom-class="assist-login-btn"
-          bind:click="submit"
-        >
-          {{submitText}}
-        </van-button>
+        <view class="assist-btn-wrap">
+          <van-button
+            type="primary"
+            loading="{{submitting}}"
+            custom-class="assist-login-btn"
+            bind:click="submit"
+          >
+            {{submitText}}
+          </van-button>
+        </view>
         <view class="entry-link" bindtap="goRegister">没有账号？去注册</view>
         <view class="entry-link link-back" bindtap="switchToWechatLogin">返回微信一键登录</view>
       </view>
@@ -94,20 +103,6 @@
       <view class="agreement-tip">登录即表示你同意《用户协议》和《隐私政策》</view>
     </view>
   </view>
-
-  <van-popup show="{{showConfirmSheet}}" position="bottom" round bind:close="closeConfirmSheet">
-    <view class="confirm-sheet">
-      <view class="confirm-title">
-        <text class="i i-wechat inline-icon"></text>
-        确认微信授权登录
-      </view>
-      <view class="confirm-desc">确认后将使用当前身份发起微信登录并同步基础信息</view>
-      <view class="confirm-actions">
-        <van-button plain type="primary" custom-class="confirm-btn" bind:click="closeConfirmSheet">取消</van-button>
-        <van-button type="success" custom-class="confirm-btn" bind:click="confirmWechatLogin">确认登录</van-button>
-      </view>
-    </view>
-  </van-popup>
 
   <profile-complete-sheet
     visible="{{showProfileCompleteSheet}}"

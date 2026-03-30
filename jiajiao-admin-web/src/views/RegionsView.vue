@@ -5,7 +5,10 @@ import ConfirmDialog from '../components/admin/ConfirmDialog.vue'
 import FormModal from '../components/admin/FormModal.vue'
 
 const list = ref([])
+const allRecords = ref([])
 const keyword = ref('')
+const provinceFilter = ref('')
+const cityFilter = ref('')
 const loading = ref(false)
 const saving = ref(false)
 const modalVisible = ref(false)
@@ -43,20 +46,44 @@ function edit(item) {
 function validateForm() {
   if (!form.value.regionName?.trim()) return '区域名称不能为空'
   if (!form.value.regionCode?.trim()) return '区域编码不能为空'
+  if (!form.value.regionProvince?.trim()) return '省份不能为空'
+  if (!form.value.regionCity?.trim()) return '城市不能为空'
   if (!/^[A-Z0-9_]+$/.test(form.value.regionCode)) return '区域编码仅支持大写字母、数字、下划线'
   if (Number(form.value.regionSort) < 0) return '排序值不能小于0'
   if (![0, 1].includes(Number(form.value.regionStatus))) return '状态值仅支持0或1'
+  const regionName = form.value.regionName.trim()
+  const regionProvince = form.value.regionProvince.trim()
+  const regionCity = form.value.regionCity.trim()
+  const duplicate = (allRecords.value || []).find((item) => {
+    if (form.value.id && item.id === form.value.id) return false
+    return String(item.regionName || '').trim() === regionName
+      && String(item.regionProvince || '').trim() === regionProvince
+      && String(item.regionCity || '').trim() === regionCity
+  })
+  if (duplicate) return '同省同市下区域名称重复，请调整后再保存'
   return ''
+}
+
+function applyFilters(records) {
+  const keywordText = keyword.value.trim()
+  const provinceText = provinceFilter.value.trim()
+  const cityText = cityFilter.value.trim()
+  return (records || []).filter((i) => {
+    const matchKeyword = !keywordText
+      || (i.regionName || '').includes(keywordText)
+      || (i.regionCode || '').includes(keywordText)
+    const matchProvince = !provinceText || String(i.regionProvince || '').includes(provinceText)
+    const matchCity = !cityText || String(i.regionCity || '').includes(cityText)
+    return matchKeyword && matchProvince && matchCity
+  })
 }
 
 async function load() {
   loading.value = true
   try {
     const data = await pageRegions({ pageNo: 1, pageSize: 50 })
-    const records = data.records || []
-    list.value = keyword.value
-      ? records.filter((i) => (i.regionName || '').includes(keyword.value) || (i.regionCode || '').includes(keyword.value))
-      : records
+    allRecords.value = data.records || []
+    list.value = applyFilters(allRecords.value)
   } finally {
     loading.value = false
   }
@@ -106,6 +133,8 @@ onMounted(load)
       <div class="panel-body">
         <div class="toolbar">
           <input v-model="keyword" class="input col-span-3" placeholder="区域名称/编码筛选" />
+          <input v-model="provinceFilter" class="input col-span-2" placeholder="省份筛选" />
+          <input v-model="cityFilter" class="input col-span-2" placeholder="城市筛选" />
           <button class="btn ghost col-span-1" @click="load">筛选</button>
           <button class="btn col-span-1" @click="openCreate">新增</button>
         </div>

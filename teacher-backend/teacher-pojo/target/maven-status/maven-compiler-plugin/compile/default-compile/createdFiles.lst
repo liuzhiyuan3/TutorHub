@@ -28,6 +28,7 @@ com\teacher\pojo\enums\RequirementStatusEnum.class
 com\teacher\pojo\vo\PublicSlideVO.class
 com\teacher\pojo\entity\AdvertisingEntity.class
 com\teacher\pojo\dto\admin\SlideSaveRequest.class
+com\teacher\pojo\vo\RegionCityNodeVO.class
 com\teacher\pojo\dto\RegisterRequest.class
 com\teacher\pojo\vo\SubjectCategoryTreeVO.class
 com\teacher\pojo\dto\admin\DictionaryContentSaveRequest.class
@@ -36,6 +37,7 @@ com\teacher\pojo\vo\TeacherPublicDetailVO.class
 com\teacher\pojo\dto\admin\SubjectCategorySaveRequest.class
 com\teacher\pojo\entity\TeacherAuditEntity.class
 com\teacher\pojo\vo\admin\AdminTeacherProfileVO.class
+com\teacher\pojo\vo\RegionProvinceNodeVO.class
 com\teacher\pojo\dto\TeacherProfileRequest.class
 com\teacher\pojo\entity\MenuEntity.class
 com\teacher\pojo\entity\AppointmentEntity.class
@@ -44,6 +46,7 @@ com\teacher\pojo\dto\admin\RegionSaveRequest.class
 com\teacher\pojo\vo\RequirementPublicDetailVO.class
 com\teacher\pojo\vo\admin\AdminSessionVO.class
 com\teacher\pojo\entity\SubjectCategoryEntity.class
+com\teacher\pojo\vo\RegionDistrictNodeVO.class
 com\teacher\pojo\vo\PublicOptionVO.class
 com\teacher\pojo\entity\RoleEntity.class
 com\teacher\pojo\vo\HomeOverviewVO.class

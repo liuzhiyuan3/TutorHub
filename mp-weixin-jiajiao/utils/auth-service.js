@@ -7,7 +7,11 @@ async function passwordLogin(payload) {
     url: '/api/auth/user/login',
     method: 'POST',
     authMode: 'optional',
-    data: payload
+    data: {
+      account: payload && payload.account,
+      password: payload && payload.password,
+      userType: payload && payload.userType
+    }
   })
   saveSession(data)
   return data

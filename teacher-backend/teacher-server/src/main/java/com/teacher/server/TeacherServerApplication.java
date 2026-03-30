@@ -1,6 +1,6 @@
 package com.teacher.server;
 
-import com.teacher.server.config.QQMapProperties;
+import com.teacher.server.config.AmapProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
@@ -20,14 +20,14 @@ public class TeacherServerApplication {
     }
 
     @Bean
-    public ApplicationRunner qqMapKeyHealthCheck(QQMapProperties qqMapProperties) {
+    public ApplicationRunner amapKeyHealthCheck(AmapProperties amapProperties) {
         return args -> {
-            String key = qqMapProperties == null ? "" : qqMapProperties.getKey();
+            String key = amapProperties == null ? "" : amapProperties.getKey();
             boolean configured = StringUtils.hasText(key);
             if (configured) {
-                log.info("[StartupCheck] QQ_MAP_KEY configured: true");
+                log.info("[StartupCheck] AMAP_WEB_KEY configured: true");
             } else {
-                log.warn("[StartupCheck] QQ_MAP_KEY configured: false, reverse geocode will fallback");
+                log.warn("[StartupCheck] AMAP_WEB_KEY configured: false, reverse geocode will fallback");
             }
         };
     }

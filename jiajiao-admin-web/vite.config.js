@@ -7,6 +7,17 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [vue()],
+    build: {
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vue: ['vue', 'vue-router'],
+            axios: ['axios']
+          }
+        }
+      }
+    },
     server: {
       host: '0.0.0.0',
       port: Number(env.VITE_PORT || 5173),

@@ -36,7 +36,8 @@ public class AdminStatsController {
     @GetMapping("/trend")
     public ApiResponse<StatsOverviewVO> trend(
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate) {
-        return ApiResponse.ok(statsService.overview(startDate, endDate));
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(defaultValue = "day") String granularity) {
+        return ApiResponse.ok(statsService.overview(startDate, endDate, granularity));
     }
 }

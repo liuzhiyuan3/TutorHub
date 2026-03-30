@@ -1,6 +1,6 @@
 const authService = require('../../utils/auth-service')
 const globalStore = require('../../utils/global-store')
-const { resolveRegionWithFallback, toFallbackMessage } = require('../../utils/location-service')
+const { resolveRegionWithFallback, resolveRegionSmart, toFallbackMessage } = require('../../utils/location-service')
 const { normalizeUserType } = require('../../utils/session-state')
 
 Page({
@@ -9,7 +9,6 @@ Page({
     fromSwitch: false,
     submitting: false,
     authStage: 'idle',
-    showConfirmSheet: false,
     loginEntryMode: 'wechat',
     submitText: '账号登录',
     primaryBtnText: '微信一键登录',
@@ -60,7 +59,7 @@ Page({
 
   async refreshRegionOnShow() {
     try {
-      const resolved = await resolveRegionWithFallback()
+      const resolved = await resolveRegionSmart()
       globalStore.setRegion(resolved)
     } catch (e) {
       // keep silent on login page
@@ -76,7 +75,6 @@ Page({
     if (this.data.submitting) return
     this.setData({
       loginEntryMode: 'account',
-      showConfirmSheet: false,
       authStage: 'idle',
       errorText: ''
     }, () => this.refreshViewState())
@@ -104,31 +102,13 @@ Page({
     this.setData({
       submitting: false,
       authStage: 'idle',
-      errorText: '',
-      showConfirmSheet: false
+      errorText: ''
     }, () => this.refreshViewState())
   },
 
   onPullDownRefresh() {
     this.resetSubmitState()
     wx.stopPullDownRefresh()
-  },
-
-  openConfirmSheet() {
-    if (this.data.submitting) return
-    this.setData({
-      showConfirmSheet: true,
-      authStage: 'confirm',
-      errorText: ''
-    })
-  },
-
-  closeConfirmSheet() {
-    if (this.data.submitting) return
-    this.setData({
-      showConfirmSheet: false,
-      authStage: 'idle'
-    }, () => this.refreshViewState())
   },
 
   onInput(e) {
@@ -142,6 +122,16 @@ Page({
     const options = this.data.userTypeOptions || []
     const option = options[idx] || options[0] || { value: 0 }
     this.setData({ 'form.userType': Number(option.value) }, () => this.refreshViewState())
+  },
+
+  onTypeTap(e) {
+    const raw = e && e.currentTarget && e.currentTarget.dataset
+      ? e.currentTarget.dataset.value
+      : undefined
+    const value = Number(raw)
+    if (value !== 0 && value !== 1) return
+    if (this.data.submitting) return
+    this.setData({ 'form.userType': value }, () => this.refreshViewState())
   },
 
   isNetworkLikeError(errorMessage) {
@@ -186,7 +176,8 @@ Page({
       const selectedUserType = Number(this.data.form.userType)
       const data = await this.withRetry(() => authService.passwordLogin({
         account: this.data.form.account,
-        password: this.data.form.password
+        password: this.data.form.password,
+        userType: selectedUserType
       }), 1, 450)
 
       if (!data) {
@@ -207,7 +198,6 @@ Page({
     this.setData({
       submitting: true,
       authStage: 'authorizing',
-      showConfirmSheet: false,
       errorText: ''
     }, () => this.refreshViewState())
 
@@ -248,6 +238,11 @@ Page({
   async syncRegionAfterLogin() {
     const resolved = await resolveRegionWithFallback()
     globalStore.setRegion(resolved)
+    const hasCoordinate = resolved && resolved.latitude != null && resolved.longitude != null
+    const locationAddress = [resolved.province, resolved.city, resolved.district].filter(Boolean).join('')
+      || (hasCoordinate
+        ? `lng:${Number(resolved.longitude).toFixed(6)},lat:${Number(resolved.latitude).toFixed(6)}`
+        : '')
     if (resolved && resolved.source !== 'gps') {
       wx.showToast({
         title: toFallbackMessage(resolved.fallbackReason),
@@ -262,7 +257,7 @@ Page({
         regionCity: resolved.city || '',
         regionDistrict: resolved.district || '',
         regionSource: resolved.source || 'default',
-        userLocationAddress: [resolved.province, resolved.city, resolved.district].filter(Boolean).join(''),
+        userLocationAddress: locationAddress,
         userLocationLongitude: resolved.longitude,
         userLocationLatitude: resolved.latitude
       })

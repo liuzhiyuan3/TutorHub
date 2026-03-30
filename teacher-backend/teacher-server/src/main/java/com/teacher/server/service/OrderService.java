@@ -41,10 +41,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+    private static final Set<String> NON_BLOCKING_PROFILE_FIELDS = Set.of("nickName", "avatarUrl");
     private final OrderMapper orderMapper;
     private final RequirementMapper requirementMapper;
     private final TeacherInfoMapper teacherInfoMapper;
@@ -73,10 +75,11 @@ public class OrderService {
         }
 
         UserProfileCompletenessVO completeness = userService.profileCompleteness();
-        if (completeness.getReady() == null || !completeness.getReady()) {
+        List<String> blockingMissingFields = resolveBlockingMissingFields(completeness);
+        if (!blockingMissingFields.isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.UNPROCESSABLE_ENTITY,
-                    "Profile is incomplete: " + toChineseMissingFields(completeness.getMissingFields()));
+                    "Profile is incomplete: " + toChineseMissingFields(blockingMissingFields));
         }
 
         TeacherInfoEntity teacher = teacherInfoMapper.selectOne(new LambdaQueryWrapper<TeacherInfoEntity>()
@@ -261,16 +264,16 @@ public class OrderService {
             vo.setBizId(requirement.getId());
             vo.setSourceType("REQUIREMENT");
             vo.setParentOrderStage("PUBLISHED_WAITING");
-            vo.setParentOrderStageText("WAITING");
+            vo.setParentOrderStageText("等待接单");
             vo.setRequirementStatus(requirement.getRequirementStatus());
             vo.setOrderStatus(null);
-            vo.setStatusText("WAITING");
+            vo.setStatusText("待接单");
             vo.setOrderNumber("-");
             vo.setRequirementId(requirement.getId());
             vo.setOrderAmount(requirement.getRequirementSalary());
             vo.setServiceFee(BigDecimal.ZERO);
             vo.setPayStatus(0);
-            vo.setPayStatusText("UNPAID");
+            vo.setPayStatusText("待支付");
             vo.setSubjectName(requirement.getRequirementTitle());
             vo.setCounterpartyName("-");
             vo.setOrderRemark(requirement.getRequirementDescription());
@@ -563,26 +566,26 @@ public class OrderService {
     }
 
     private String resolvePayStatusText(Integer payStatus) {
-        return payStatus != null && payStatus == 1 ? "PAID" : "UNPAID";
+        return payStatus != null && payStatus == 1 ? "已支付" : "待支付";
     }
 
     private String statusText(Integer orderStatus) {
         if (orderStatus == null) {
-            return "UNKNOWN";
+            return "未知";
         }
         if (orderStatus == OrderStatusEnum.WAITING_CONFIRM.getCode()) {
-            return "WAITING_CONFIRM";
+            return "待确认";
         }
         if (orderStatus == OrderStatusEnum.IN_PROGRESS.getCode()) {
-            return "IN_PROGRESS";
+            return "进行中";
         }
         if (orderStatus == OrderStatusEnum.FINISHED.getCode()) {
-            return "FINISHED";
+            return "已完成";
         }
         if (orderStatus == OrderStatusEnum.CANCELED.getCode()) {
-            return "CANCELED";
+            return "已取消";
         }
-        return "UNKNOWN";
+        return "未知";
     }
 
     private String resolveParentStageByOrder(Integer orderStatus) {
@@ -590,31 +593,34 @@ public class OrderService {
             return "PUBLISHED_WAITING";
         }
         if (orderStatus == OrderStatusEnum.WAITING_CONFIRM.getCode()) {
-            return "WAITING_CONFIRM";
+            return "MATCHED";
         }
         if (orderStatus == OrderStatusEnum.IN_PROGRESS.getCode()) {
-            return "IN_PROGRESS";
+            return "IN_SERVICE";
         }
         if (orderStatus == OrderStatusEnum.FINISHED.getCode()) {
-            return "FINISHED";
+            return "DONE";
         }
         return "CLOSED";
     }
 
     private String resolveParentStageText(String stage) {
+        if ("PUBLISHED_WAITING".equals(stage)) {
+            return "等待接单";
+        }
         if ("MATCHED".equals(stage)) {
-            return "WAITING";
+            return "已被承接";
         }
         if ("IN_SERVICE".equals(stage)) {
-            return "IN_SERVICE";
+            return "服务中";
         }
         if ("DONE".equals(stage)) {
-            return "DONE";
+            return "已完成";
         }
         if ("CLOSED".equals(stage)) {
-            return "CLOSED";
+            return "已关闭";
         }
-        return "WAITING";
+        return "等待接单";
     }
 
     private Integer resolveRequirementStatusByOrder(Integer orderStatus) {
@@ -642,13 +648,25 @@ public class OrderService {
 
     private String mapFieldLabel(String fieldKey) {
         if ("nickName".equals(fieldKey)) return "昵称";
-        if ("avatarUrl".equals(fieldKey)) return "avatar";
+        if ("avatarUrl".equals(fieldKey)) return "头像";
         if ("teacherIdentity".equals(fieldKey)) return "教员身份";
         if ("teacherTutoringMethod".equals(fieldKey)) return "授课方式";
-        if ("teacherSchool".equals(fieldKey)) return "school";
-        if ("teacherMajor".equals(fieldKey)) return "major";
-        if ("teacherEducation".equals(fieldKey)) return "education";
-        return "field";
+        if ("teacherSchool".equals(fieldKey)) return "学校";
+        if ("teacherMajor".equals(fieldKey)) return "专业";
+        if ("teacherEducation".equals(fieldKey)) return "学历";
+        return "资料字段";
+    }
+
+    private List<String> resolveBlockingMissingFields(UserProfileCompletenessVO completeness) {
+        if (completeness == null || completeness.getMissingFields() == null || completeness.getMissingFields().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return completeness.getMissingFields().stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(field -> !field.isEmpty())
+                .filter(field -> !NON_BLOCKING_PROFILE_FIELDS.contains(field))
+                .collect(Collectors.toList());
     }
 
     private Map<String, String> buildUserNameMap(OrderEntity order) {

@@ -20,6 +20,13 @@ request.interceptors.response.use((response) => {
   if (!result || typeof result.code === 'undefined') {
     return Promise.reject(new Error('响应格式不正确'))
   }
+  if (result.code === 401) {
+    localStorage.removeItem('admin_token')
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login'
+    }
+    return Promise.reject(new Error(result.message || '登录已失效，请重新登录'))
+  }
   if (result.code !== 0) {
     return Promise.reject(new Error(result.message || '请求失败'))
   }

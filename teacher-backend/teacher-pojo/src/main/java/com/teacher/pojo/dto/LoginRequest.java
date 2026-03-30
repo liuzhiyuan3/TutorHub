@@ -10,4 +10,9 @@ public class LoginRequest {
 
     @NotBlank(message = "密码不能为空")
     private String password;
+
+    /**
+     * 当前会话登录身份（0=家长，1=教员），可选。
+     */
+    private Integer userType;
 }

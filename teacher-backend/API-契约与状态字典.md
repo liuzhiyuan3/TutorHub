@@ -74,7 +74,7 @@
 - `GET /api/home/overview`：首页聚合数据
 - `GET /api/home/filters`：筛选元数据（学科/区域/学校）
 - `GET /api/home/teachers/search`：教员组合检索（VO）
-  - 参数：`subjectId, regionId, tutoringMethod, auditStatus, keyword, schoolKeyword, minTeachingYears, maxTeachingYears, sortBy(hot/latest/success), pageNo, pageSize`
+  - 参数：`subjectId, regionId, tutoringMethod, auditStatus, keyword, schoolKeyword, minTeachingYears, maxTeachingYears, userLat, userLng, maxDistanceKm, sortBy(hot/latest/success/distance), pageNo, pageSize`
 - `GET /api/home/requirements/search`：需求组合检索（VO）
   - 参数：`subjectId, regionId, tutoringMethod, minSalary, maxSalary, gradeKeyword, keyword, sortBy(latest/salaryAsc/salaryDesc), pageNo, pageSize`
 

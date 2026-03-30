@@ -3,13 +3,29 @@ const globalStore = require('./global-store')
 const { getCurrentLocationWithAuth } = require('./location')
 
 const REGION_CACHE_TTL = 30 * 60 * 1000
+const REGION_SMART_REFRESH_TTL = 20 * 60 * 1000
 let latestTaskId = 0
+let regionResolvePromise = null
+
+function logLocationTrace(event, reason) {
+  try {
+    const text = String(reason || 'unknown')
+    console.info(`[location-trace] ${event}: ${text}`)
+  } catch (e) {}
+}
 
 async function getSafeLocation() {
   const exact = await getCurrentLocationWithAuth()
+  const latitude = Number(exact.latitude)
+  const longitude = Number(exact.longitude)
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    const err = new Error('invalid coordinate')
+    err.reason = 'invalid_coordinate'
+    throw err
+  }
   return {
-    latitude: Number(exact.latitude),
-    longitude: Number(exact.longitude),
+    latitude,
+    longitude,
     accuracy: Number(exact.accuracy || 0),
     source: 'gps'
   }
@@ -20,11 +36,10 @@ function classifyLocationError(error) {
   const text = String((error && (error.errMsg || error.message)) || '').toLowerCase()
   if (!text) return 'unknown'
   if (text.includes('cancel')) return 'cancel'
-  if (text.includes('auth deny') || text.includes('auth denied') || text.includes('permission') || text.includes('authorize')) {
-    return 'auth'
-  }
+  if (text.includes('auth deny') || text.includes('auth denied') || text.includes('permission') || text.includes('authorize')) return 'auth'
   if (text.includes('timeout')) return 'timeout'
-  if (text.includes('chooseLocation'.toLowerCase())) return 'choose'
+  if (text.includes('invalid coordinate')) return 'invalid_coordinate'
+  if (text.includes('chooselocation')) return 'choose'
   if (text.includes('geocoder') || text.includes('reverse') || text.includes('region')) return 'geocode'
   if (text.includes('network') || text.includes('fail')) return 'network'
   return 'unknown'
@@ -34,6 +49,7 @@ function toLocationErrorMessage(error) {
   const reason = classifyLocationError(error)
   if (reason === 'auth') return '未授权定位，请在设置中开启后重试'
   if (reason === 'timeout') return '定位超时，请稍后重试'
+  if (reason === 'invalid_coordinate') return '定位坐标异常，请重试或手动选点'
   if (reason === 'choose') return '地图选点失败，请稍后重试'
   if (reason === 'network') return '网络异常，请检查后重试'
   if (reason === 'geocode') return '地址解析失败，已记录坐标'
@@ -41,21 +57,34 @@ function toLocationErrorMessage(error) {
 }
 
 function reverseGeocode(location) {
+  const app = getApp && getApp()
+  const amapKey = String(
+    (app && app.globalData && app.globalData.amapKey) || ''
+  ).trim()
+  const payload = {
+    latitude: Number(location.latitude),
+    longitude: Number(location.longitude)
+  }
+  if (amapKey) {
+    payload.amapKey = amapKey
+  }
+
   return request({
     url: '/api/location/reverse',
     method: 'POST',
     authMode: 'optional',
-    data: {
-      latitude: Number(location.latitude),
-      longitude: Number(location.longitude)
-    }
+    data: payload
   }).then((data) => ({
-    address: (data && data.address) || '',
-    province: (data && data.province) || '',
-    city: (data && data.city) || '',
-    district: (data && data.district) || '',
+    address: (data && typeof data === 'object' && data.address) || '',
+    province: (data && typeof data === 'object' && data.province) || '',
+    city: (data && typeof data === 'object' && data.city) || '',
+    district: (data && typeof data === 'object' && data.district) || '',
     source: 'backend'
-  }))
+  })).catch(() => {
+    const err = new Error('reverse geocode failed')
+    err.reason = 'geocode'
+    throw err
+  })
 }
 
 function toFallbackMessage(reason) {
@@ -65,7 +94,7 @@ function toFallbackMessage(reason) {
     return '未授权定位，已使用默认地区'
   }
   if (text.includes('timeout')) return '定位超时，已使用默认地区'
-  if (text.includes('地理') || text.includes('逆地理')) return '地区解析失败，已使用默认地区'
+  if (text.includes('地理') || text.includes('逆地理') || text.includes('geocode')) return '地区解析失败，已使用默认地区'
   return '定位失败，已使用默认地区'
 }
 
@@ -102,17 +131,39 @@ function matchRegionCode(regions, geo) {
     }
   })
   if (!best) return null
-  // 未命中时不要回退首项（常见为“全国”），改为让上层使用逆地理城市名展示
   if (bestScore <= 0) return null
   return best
 }
 
 function buildFallbackRegion(reason) {
+  return buildFallbackRegionWithLocation(reason, null)
+}
+
+function buildFallbackRegionWithLocation(reason, location) {
+  const safeLatitude = location && Number.isFinite(Number(location.latitude)) ? Number(location.latitude) : null
+  const safeLongitude = location && Number.isFinite(Number(location.longitude)) ? Number(location.longitude) : null
+  const hasCoordinate = safeLatitude !== null && safeLongitude !== null
   const cached = globalStore.getRegion()
   if (cached && cached.regionCode && Date.now() - Number(cached.syncAt || 0) < REGION_CACHE_TTL) {
     return {
       ...cached,
+      latitude: hasCoordinate ? safeLatitude : (cached.latitude == null ? null : Number(cached.latitude)),
+      longitude: hasCoordinate ? safeLongitude : (cached.longitude == null ? null : Number(cached.longitude)),
       source: 'cache',
+      fallbackReason: reason || ''
+    }
+  }
+  if (hasCoordinate) {
+    return {
+      regionCode: '',
+      regionName: '当前位置',
+      province: '',
+      city: '',
+      district: '',
+      latitude: safeLatitude,
+      longitude: safeLongitude,
+      source: 'gps_fallback',
+      syncAt: Date.now(),
       fallbackReason: reason || ''
     }
   }
@@ -132,8 +183,9 @@ function buildFallbackRegion(reason) {
 
 async function resolveRegionWithFallback() {
   const taskId = ++latestTaskId
+  let location = null
   try {
-    const location = await getSafeLocation()
+    location = await getSafeLocation()
     const geo = await reverseGeocode(location)
     const regions = await loadRegions()
     const matched = matchRegionCode(regions, geo)
@@ -151,10 +203,58 @@ async function resolveRegionWithFallback() {
     if (taskId !== latestTaskId) {
       return globalStore.getRegion()
     }
+    logLocationTrace('resolve_success', 'gps')
     return resolved
   } catch (e) {
-    return buildFallbackRegion(e && e.message ? e.message : 'region_resolve_failed')
+    const reason = e && e.message ? e.message : 'region_resolve_failed'
+    logLocationTrace('resolve_fallback', reason)
+    return buildFallbackRegionWithLocation(reason, location)
   }
+}
+
+function hasRegionCacheValue(region) {
+  if (!region || typeof region !== 'object') return false
+  if (String(region.regionCode || '').trim()) return true
+  if (String(region.regionName || '').trim()) return true
+  const lat = Number(region.latitude)
+  const lng = Number(region.longitude)
+  if (Number.isFinite(lat) && Number.isFinite(lng)) return true
+  return false
+}
+
+function isRegionCacheFresh(region, ttlMs) {
+  if (!hasRegionCacheValue(region)) return false
+  const syncAt = Number(region.syncAt || 0)
+  if (!Number.isFinite(syncAt) || syncAt <= 0) return false
+  const safeTtl = Number(ttlMs)
+  const effectiveTtl = Number.isFinite(safeTtl) && safeTtl > 0 ? safeTtl : REGION_SMART_REFRESH_TTL
+  return Date.now() - syncAt < effectiveTtl
+}
+
+async function resolveRegionSmart(options) {
+  const config = options || {}
+  const forceRefresh = !!config.forceRefresh
+  const ttlMs = Number.isFinite(Number(config.ttlMs)) ? Number(config.ttlMs) : REGION_SMART_REFRESH_TTL
+  const cached = globalStore.getRegion()
+
+  if (!forceRefresh && isRegionCacheFresh(cached, ttlMs)) {
+    return {
+      ...cached,
+      source: String(cached.source || 'cache')
+    }
+  }
+
+  if (regionResolvePromise) {
+    return regionResolvePromise
+  }
+
+  const task = resolveRegionWithFallback().finally(() => {
+    if (regionResolvePromise === task) {
+      regionResolvePromise = null
+    }
+  })
+  regionResolvePromise = task
+  return task
 }
 
 module.exports = {
@@ -162,6 +262,7 @@ module.exports = {
   reverseGeocode,
   matchRegionCode,
   resolveRegionWithFallback,
+  resolveRegionSmart,
   toFallbackMessage,
   classifyLocationError,
   toLocationErrorMessage

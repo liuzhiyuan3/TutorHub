@@ -47,12 +47,18 @@
             <view class="info-cell-label">当前地区</view>
             <view class="info-cell-value">{{currentRegionText}}</view>
           </view>
-          <view class="info-cell info-cell-wide">
-            <view class="info-cell-label">我的位置</view>
-            <view class="info-cell-value">{{user.userLocationAddress || '未设置'}}</view>
-          </view>
         </view>
+      </view>
 
+      <view class="card profile-location-card">
+        <view class="section-head">
+          <view class="section-title-wrap">
+            <text class="section-icon i i-location"></text>
+            <view class="section-title section-title-sm">我的位置</view>
+          </view>
+          <view class="section-sub">定位信息</view>
+        </view>
+        <view class="location-content">{{user.userLocationAddress || '未设置'}}</view>
         <view class="profile-actions-row">
           <van-button plain type="primary" custom-class="upload-btn" loading="{{portraitUploading}}" bind:click="chooseUserPortrait">
             {{portraitUploading ? '上传中...' : '上传头像'}}
@@ -60,7 +66,7 @@
           <van-button plain type="primary" custom-class="row-action-btn" loading="{{locationUpdating}}" bind:click="updateMyLocation">
             {{locationUpdating ? '更新中...' : '更新位置'}}
           </van-button>
-          <van-button plain type="primary" custom-class="row-action-btn" bind:click="viewMyLocation">地图查看</van-button>
+          <van-button plain type="primary" custom-class="row-action-btn row-action-btn-wide" bind:click="viewMyLocation">地图查看</van-button>
         </view>
       </view>
 
@@ -96,13 +102,13 @@
         <view class="quick-grid" wx:if="{{roleMode === 'parent'}}">
           <view class="quick-item" bindtap="goTeachers"><text class="i i-search quick-icon"></text><view class="quick-text">挑老师</view></view>
           <view class="quick-item" bindtap="goRequirementCreate"><text class="i i-requirement quick-icon"></text><view class="quick-text">发布需求</view></view>
-          <view class="quick-item" bindtap="goOrders"><text class="i i-order quick-icon"></text><view class="quick-text">我的订单</view></view>
+          <view class="quick-item quick-item-wide" bindtap="goOrders"><text class="i i-order quick-icon"></text><view class="quick-text">我的订单</view></view>
         </view>
 
         <view class="quick-grid" wx:elif="{{roleMode === 'teacher'}}">
           <view class="quick-item" bindtap="goRequirements"><text class="i i-requirement quick-icon"></text><view class="quick-text">接单列表</view></view>
           <view class="quick-item" bindtap="goOrders"><text class="i i-order quick-icon"></text><view class="quick-text">我的订单</view></view>
-          <view class="quick-item" bindtap="goTeachers"><text class="i i-search quick-icon"></text><view class="quick-text">教员名录</view></view>
+          <view class="quick-item quick-item-wide" bindtap="goTeachers"><text class="i i-search quick-icon"></text><view class="quick-text">教员名录</view></view>
         </view>
       </view>
 

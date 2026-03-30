@@ -42,7 +42,7 @@ class PublicTeacherMetricsApiTest {
         Mockito.when(homeQueryService.teacherSearch(
                         Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
                         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-                        Mockito.any(), Mockito.any(), Mockito.any()))
+                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/home/teachers/search"))

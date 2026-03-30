@@ -21,7 +21,10 @@ public class LocationController {
 
     @PostMapping("/reverse")
     public ApiResponse<LocationReverseVO> reverse(@Valid @RequestBody LocationReverseRequest request) {
-        return ApiResponse.ok(locationService.reverse(request.getLatitude(), request.getLongitude()));
+        String requestKey = request.getAmapKey();
+        if (requestKey == null || requestKey.trim().isEmpty()) {
+            requestKey = request.getQqMapKey();
+        }
+        return ApiResponse.ok(locationService.reverse(request.getLatitude(), request.getLongitude(), requestKey));
     }
 }
-

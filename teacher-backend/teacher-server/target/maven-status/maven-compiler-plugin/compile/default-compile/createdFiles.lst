@@ -61,5 +61,6 @@ com\teacher\server\mapper\RoleMapper.class
 com\teacher\server\service\TeacherOrderStatsService.class
 com\teacher\server\config\SecurityConfig.class
 com\teacher\server\mapper\TeacherSubjectMapper.class
+com\teacher\server\service\HomeQueryService$UserRegionPreference.class
 com\teacher\server\controller\admin\AdminRequirementController.class
 com\teacher\server\service\AdminManageService.class

@@ -1,28 +1,27 @@
 :root {
-  --bg-page: #edf4ff;
-  --bg-page-accent: radial-gradient(circle at 20% 10%, rgba(134, 190, 255, 0.28), transparent 42%),
-    radial-gradient(circle at 88% 5%, rgba(120, 255, 208, 0.14), transparent 35%);
+  --bg-page: #f2f5fa;
+  --bg-page-accent: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(242, 246, 252, 0.95));
   --bg-card: #ffffff;
-  --bg-soft: #f6faff;
-  --bg-soft-strong: #eff6ff;
-  --text-main: #132642;
-  --text-sub: #59708f;
-  --text-light: #8aa2c2;
-  --primary: #3b82f6;
-  --primary-hover: #2f6fe0;
-  --primary-soft: #e8f1ff;
-  --success: #16a34a;
+  --bg-soft: #f7f9fc;
+  --bg-soft-strong: #eff3f9;
+  --text-main: #1f2d3d;
+  --text-sub: #586b83;
+  --text-light: #8d9eb3;
+  --primary: #2f7df6;
+  --primary-hover: #246cdd;
+  --primary-soft: #eaf2ff;
+  --success: #1d9b57;
   --warning: #f59e0b;
-  --danger: #dc2626;
-  --danger-hover: #b91c1c;
-  --line: #dbe7f6;
-  --line-soft: #e8f0fb;
-  --line-strong: #cfdff5;
-  --shadow: 0 14px 36px rgba(40, 73, 122, 0.09);
-  --shadow-soft: 0 5px 16px rgba(50, 84, 132, 0.08);
-  --radius: 14px;
-  --radius-sm: 10px;
-  --radius-lg: 18px;
+  --danger: #d83d3d;
+  --danger-hover: #bc2f2f;
+  --line: #d7e2ee;
+  --line-soft: #e7edf5;
+  --line-strong: #c8d5e5;
+  --shadow: 0 8px 24px rgba(27, 54, 90, 0.08);
+  --shadow-soft: 0 3px 10px rgba(49, 72, 107, 0.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 14px;
 }
 
 * {
@@ -58,15 +57,15 @@ a {
 
 .section-title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
 }
 
 .section-subtitle {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: var(--text-sub);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .page-block {
@@ -81,16 +80,16 @@ a {
 }
 
 .panel-head {
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--line-soft);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(180deg, #fbfdff, #f5f9ff);
+  background: #fbfcff;
 }
 
 .panel-body {
-  padding: 16px 18px 18px;
+  padding: 14px 16px 16px;
 }
 
 .panel-mt-12 {
@@ -112,8 +111,8 @@ a {
 .toolbar {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 12px;
   align-items: center;
 }
 
@@ -166,18 +165,18 @@ a {
 .btn {
   border: 0;
   border-radius: var(--radius-sm);
-  padding: 9px 14px;
-  background: linear-gradient(180deg, #4b94ff, #347be6);
+  padding: 9px 13px;
+  background: var(--primary);
   color: #fff;
   cursor: pointer;
-  transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
+  transition: background 0.2s, transform 0.12s, box-shadow 0.2s, border-color 0.2s;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 6px 14px rgba(59, 130, 246, 0.24);
+  box-shadow: 0 4px 10px rgba(47, 125, 246, 0.24);
 }
 
 .btn:hover {
-  background: linear-gradient(180deg, #3f89f8, #2f6fe0);
+  background: var(--primary-hover);
 }
 
 .btn:active {
@@ -185,17 +184,17 @@ a {
 }
 
 .btn.secondary {
-  background: linear-gradient(180deg, #7d8ea9, #5d6f8b);
-  box-shadow: 0 6px 14px rgba(93, 111, 139, 0.2);
+  background: #64748b;
+  box-shadow: 0 4px 10px rgba(100, 116, 139, 0.2);
 }
 
 .btn.secondary:hover {
-  background: linear-gradient(180deg, #6f829f, #556784);
+  background: #55657f;
 }
 
 .btn.danger {
-  background: linear-gradient(180deg, #f04747, #dc2626);
-  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.26);
+  background: var(--danger);
+  box-shadow: 0 4px 10px rgba(216, 61, 61, 0.24);
 }
 
 .btn.danger:hover {
@@ -206,7 +205,14 @@ a {
   background: var(--primary-soft);
   color: var(--primary);
   box-shadow: none;
-  border: 1px solid #cce0ff;
+  border: 1px solid #cfe0fb;
+}
+
+.btn.sm {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 7px;
+  box-shadow: none;
 }
 
 .btn:disabled {
@@ -231,10 +237,10 @@ a {
 .table th,
 .table td {
   text-align: left;
-  padding: 12px 12px;
+  padding: 11px 10px;
   border-bottom: 1px solid var(--line-soft);
   vertical-align: middle;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .col-w-92 {
@@ -246,10 +252,10 @@ a {
 }
 
 .table th {
-  color: #2f4563;
+  color: #314a6b;
   font-weight: 600;
-  background: linear-gradient(180deg, #f8fbff, #f1f7ff);
-  font-size: 13px;
+  background: #f7faff;
+  font-size: 12px;
 }
 
 .table tbody tr:hover {
@@ -311,7 +317,7 @@ a {
 }
 
 .empty-state {
-  padding: 28px 12px;
+  padding: 24px 12px;
   text-align: center;
   color: var(--text-sub);
   background: var(--bg-soft);
@@ -439,6 +445,11 @@ a {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.table-meta {
+  color: var(--text-sub);
+  font-size: 12px;
 }
 
 .metric-card {

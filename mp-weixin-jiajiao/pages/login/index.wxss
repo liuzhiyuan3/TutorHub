@@ -1,7 +1,7 @@
 .login-page {
   min-height: 100vh;
   background: linear-gradient(160deg, #f3f8ff 0%, #ecf4ff 42%, #eef9f4 100%);
-  padding: 30rpx 24rpx 36rpx;
+  padding: 34rpx 24rpx 44rpx;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
@@ -40,7 +40,7 @@
 
 .brand-block {
   text-align: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 30rpx;
 }
 
 .brand-pill {
@@ -57,8 +57,8 @@
 }
 
 .welcome-title {
-  margin-top: 18rpx;
-  font-size: 48rpx;
+  margin-top: 20rpx;
+  font-size: 52rpx;
   line-height: 1.2;
   font-weight: 800;
   color: #1f2d45;
@@ -71,31 +71,37 @@
   color: #607894;
 }
 
+.welcome-safe-tip {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #7a90aa;
+}
+
 .login-card {
   background: rgba(255, 255, 255, 0.97);
   border: 1rpx solid #dbe8fb;
-  border-radius: 24rpx;
-  padding: 24rpx 22rpx 20rpx;
-  box-shadow: 0 12rpx 36rpx rgba(40, 73, 124, 0.1);
+  border-radius: 28rpx;
+  padding: 30rpx 26rpx 26rpx;
+  box-shadow: 0 16rpx 42rpx rgba(40, 73, 124, 0.12);
 }
 
 .entry-switch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10rpx;
-  padding: 8rpx;
+  gap: 12rpx;
+  padding: 10rpx;
   border-radius: 16rpx;
   background: #f4f8ff;
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
 }
 
 .switch-item {
-  min-height: 68rpx;
+  min-height: 76rpx;
   border-radius: 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 25rpx;
+  font-size: 27rpx;
   color: #5f7898;
   background: transparent;
   border: 1rpx solid transparent;
@@ -110,9 +116,9 @@
 
 .entry-block {
   border: 1rpx solid #deebfb;
-  border-radius: 18rpx;
+  border-radius: 20rpx;
   background: linear-gradient(180deg, #ffffff, #f9fcff);
-  padding: 20rpx 18rpx;
+  padding: 26rpx 22rpx 24rpx;
 }
 
 .entry-head {
@@ -120,7 +126,7 @@
   align-items: center;
   justify-content: center;
   gap: 10rpx;
-  margin-bottom: 14rpx;
+  margin-bottom: 18rpx;
 }
 
 .entry-icon {
@@ -138,43 +144,84 @@
   color: #243958;
 }
 
-.identity-picker {
-  margin-bottom: 12rpx;
-  border: 1rpx solid #d7e6fb;
+.identity-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10rpx;
+  margin-bottom: 10rpx;
+}
+
+.identity-tab {
+  min-height: 66rpx;
   border-radius: 12rpx;
-  font-size: 24rpx;
+  border: 1rpx solid #d7e6fb;
   background: #ffffff;
+  color: #5f7898;
+  font-size: 25rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.identity-tab-active {
+  color: #1f66c2;
+  border-color: #2f7cf6;
+  background: #edf4ff;
+}
+
+.identity-summary {
+  margin-bottom: 16rpx;
+  border: 1rpx solid #d7e6fb;
+  border-radius: 14rpx;
+  font-size: 25rpx;
+  color: #3d5578;
+  background: #ffffff;
+  padding: 14rpx 16rpx;
+}
+
+.wechat-btn-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.assist-btn-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .primary-login-btn,
 .assist-login-btn {
-  width: 92%;
-  margin: 10rpx auto 0 !important;
-  height: 70rpx !important;
-  border-radius: 12rpx !important;
-  font-size: 25rpx !important;
+  width: 100%;
+  max-width: 560rpx;
+  margin: 12rpx auto 0 !important;
+  height: 78rpx !important;
+  border-radius: 14rpx !important;
+  font-size: 27rpx !important;
   font-weight: 700 !important;
 }
 
 .assist-field {
   border: 1rpx solid #d8e6fb;
-  border-radius: 12rpx;
+  border-radius: 14rpx;
   background: #ffffff;
-  margin-bottom: 10rpx;
+  margin-bottom: 14rpx;
 }
 
 .entry-tip {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   text-align: center;
   color: #6b84a1;
-  font-size: 22rpx;
+  font-size: 23rpx;
 }
 
 .entry-link {
-  margin-top: 12rpx;
+  margin-top: 14rpx;
   text-align: center;
   color: #2a74d5;
-  font-size: 24rpx;
+  font-size: 25rpx;
   font-weight: 600;
 }
 
@@ -194,45 +241,9 @@
 }
 
 .agreement-tip {
-  margin-top: 14rpx;
+  margin-top: 18rpx;
   text-align: center;
   color: #7d93ae;
   font-size: 22rpx;
-}
-
-.confirm-sheet {
-  width: 100%;
-  padding: 24rpx;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 22rpx);
-  box-sizing: border-box;
-  background: linear-gradient(180deg, #ffffff, #f8fbff);
-  border-top-left-radius: 24rpx;
-  border-top-right-radius: 24rpx;
-}
-
-.confirm-title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #1f2f49;
-}
-
-.confirm-desc {
-  margin-top: 10rpx;
-  color: #667f9e;
-  font-size: 24rpx;
-  line-height: 1.6;
-}
-
-.confirm-actions {
-  margin-top: 20rpx;
-  display: flex;
-  gap: 10rpx;
-}
-
-.confirm-btn {
-  flex: 1 !important;
-  height: 72rpx !important;
-  border-radius: 12rpx !important;
-  font-size: 26rpx !important;
-  font-weight: 600 !important;
+  line-height: 1.7;
 }
