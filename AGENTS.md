@@ -166,8 +166,7 @@
      - 预计改动文件
      - 验证计划
 
-## 每次新对话推荐提示词
-
+## 每次新对话推荐提示词![](image.png)
 ```text
 请先阅读仓库根目录AGENTS.md、PROJECT_CONTEXT.md、API_CONTRACTS.md、UI_GUIDELINES.md，，并严格按其中规则执行。
 本次目标：<一句话目标>
