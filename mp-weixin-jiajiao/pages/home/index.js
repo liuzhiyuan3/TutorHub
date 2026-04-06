@@ -20,6 +20,7 @@ Page({
     latestRequirements: [],
     latestDispatchCards: [],
     featuredTeachers: [],
+    showMoreServices: false,
     authSheetVisible: false,
     authSheetRole: '',
     authSheetMessage: ''
@@ -177,6 +178,11 @@ Page({
   },
 
   goRequirements() {
+    const roleMode = getRoleMode()
+    if (roleMode === 'teacher') {
+      wx.navigateTo({ url: '/pages/teacher-requirements/index' })
+      return
+    }
     wx.switchTab({ url: '/pages/requirements/index' })
   },
 
@@ -228,6 +234,10 @@ Page({
 
   goLogin() {
     wx.navigateTo({ url: '/pages/login/index' })
+  },
+
+  toggleMoreServices() {
+    this.setData({ showMoreServices: !this.data.showMoreServices })
   },
 
   openSlide(e) {

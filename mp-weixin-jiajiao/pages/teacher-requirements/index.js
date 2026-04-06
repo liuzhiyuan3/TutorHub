@@ -1,7 +1,6 @@
 const { request } = require('../../utils/request')
-const { ensureRole, getRoleMode, getLoginState } = require('../../utils/auth-guard')
+const { ensureRole, getLoginState } = require('../../utils/auth-guard')
 const { normalizeRequirementItem } = require('./adapters/requirement-adapter')
-const { normalizeTeacherItem } = require('./adapters/teacher-adapter')
 
 Page({
   data: {
@@ -67,27 +66,19 @@ Page({
     loading: false,
     error: '',
     receivingId: '',
-    roleMode: 'guest',
+    roleMode: 'teacher',
     statusMap: ['待接单', '已接单', '已完成', '已取消'],
     authSheetVisible: false,
-    authSheetRole: '',
-    teacherStatusMap: ['待审核', '已通过', '已拒绝']
+    authSheetRole: ''
   },
 
   onLoad() {
-    const roleMode = getRoleMode()
-    this.setData({ roleMode })
-    if (roleMode === 'teacher') {
-      wx.redirectTo({ url: '/pages/teacher-requirements/index' })
-      return
-    }
+    this.setData({ roleMode: 'teacher' })
     this.loadFilters().then(() => this.load(true))
   },
 
   onShow() {
-    const roleMode = getRoleMode()
-    this.setData({ roleMode })
-    if (roleMode === 'teacher') return
+    this.setData({ roleMode: 'teacher' })
     if (!this.data.list.length && !this.data.loading) {
       this.load(true)
     }
@@ -173,7 +164,7 @@ Page({
   },
 
   async load(reset = false) {
-    return this.loadTeachers(reset)
+    return this.loadRequirements(reset)
   },
 
   async loadRequirements(reset = false) {
@@ -195,40 +186,6 @@ Page({
     } catch (e) {
       this.setData({ loading: false, error: e.message || '需求加载失败' })
     }
-  },
-
-  async loadTeachers(reset = false) {
-    const nextPage = reset ? 1 : this.data.pageNo
-    if (this.data.loading) return
-    if (!reset && !this.data.hasMore) return
-    this.setData({ loading: true, error: '' })
-    try {
-      const data = await request({ url: `/api/home/teachers/search?${this.buildTeacherQueryParams(nextPage)}`, authMode: 'optional' })
-      const records = ((data && data.records) || []).map((item) => normalizeTeacherItem(item))
-      const merged = reset ? records : this.data.list.concat(records)
-      const hasMore = merged.length < Number(data && data.total ? data.total : 0)
-      this.setData({
-        list: merged,
-        loading: false,
-        hasMore,
-        pageNo: nextPage + 1
-      })
-    } catch (e) {
-      this.setData({ loading: false, error: e.message || '教员加载失败' })
-    }
-  },
-
-  buildTeacherQueryParams(pageNo) {
-    const params = [`pageNo=${pageNo}`, `pageSize=${this.data.pageSize}`, 'auditStatus=1']
-    const subjectId = this.data.selectedSubjectId
-    const region = this.data.filters.regions[this.data.regionIndex]
-    const advanced = this.data.advancedFilters
-    const sortBy = advanced.sortBy === 'latest' ? 'latest' : 'hot'
-    if (subjectId) params.push(`subjectId=${encodeURIComponent(subjectId)}`)
-    if (region && region.id) params.push(`regionId=${encodeURIComponent(region.id)}`)
-    if (advanced.keyword) params.push(`keyword=${encodeURIComponent(advanced.keyword)}`)
-    params.push(`sortBy=${encodeURIComponent(sortBy)}`)
-    return params.join('&')
   },
 
   buildQueryParams(pageNo) {
@@ -437,11 +394,6 @@ Page({
 
   onLoadMore() { this.load(false) },
   noop() {},
-  goTeacherDetail(e) {
-    const id = e && e.currentTarget && e.currentTarget.dataset ? e.currentTarget.dataset.id : ''
-    if (!id) return
-    wx.navigateTo({ url: `/pages/teacher-detail/index?id=${id}` })
-  },
 
   ensureTeacherForReceive(payload) {
     const state = getLoginState()
@@ -550,7 +502,7 @@ Page({
   },
 
   onAuthSheetSuccess() {
-    this.setData({ authSheetVisible: false, authSheetRole: '', roleMode: getRoleMode() })
+    this.setData({ authSheetVisible: false, authSheetRole: '', roleMode: 'teacher' })
     this.load(true)
     if (this._pendingReceivePayload) {
       const payload = this._pendingReceivePayload
@@ -629,3 +581,4 @@ Page({
     }
   }
 })
+

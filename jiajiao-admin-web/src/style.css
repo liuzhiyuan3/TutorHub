@@ -2,6 +2,7 @@
   --bg-page: #f2f5fa;
   --bg-page-accent: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(242, 246, 252, 0.95));
   --bg-card: #ffffff;
+  --bg-card-muted: #fcfdff;
   --bg-soft: #f7f9fc;
   --bg-soft-strong: #eff3f9;
   --text-main: #1f2d3d;
@@ -10,15 +11,24 @@
   --primary: #2f7df6;
   --primary-hover: #246cdd;
   --primary-soft: #eaf2ff;
+  --secondary: #64748b;
+  --secondary-hover: #55657f;
   --success: #1d9b57;
   --warning: #f59e0b;
   --danger: #d83d3d;
   --danger-hover: #bc2f2f;
+  --info: #235fc1;
   --line: #d7e2ee;
   --line-soft: #e7edf5;
   --line-strong: #c8d5e5;
-  --shadow: 0 8px 24px rgba(27, 54, 90, 0.08);
-  --shadow-soft: 0 3px 10px rgba(49, 72, 107, 0.06);
+  --shadow: 0 6px 16px rgba(27, 54, 90, 0.08);
+  --shadow-soft: 0 2px 8px rgba(49, 72, 107, 0.06);
+  --focus-ring: 0 0 0 3px rgba(47, 125, 246, 0.2);
+  --sidebar-bg: linear-gradient(170deg, #1e3a8a, #1d4ed8 56%, #1554c7);
+  --sidebar-text: #e7f1ff;
+  --sidebar-text-subtle: rgba(219, 234, 254, 0.86);
+  --sidebar-hover: rgba(255, 255, 255, 0.14);
+  --sidebar-active: rgba(255, 255, 255, 0.2);
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 14px;
@@ -52,7 +62,7 @@ a {
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .section-title {
@@ -75,7 +85,7 @@ a {
 .panel {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--bg-card);
   box-shadow: var(--shadow-soft);
 }
 
@@ -85,7 +95,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fbfcff;
+  background: var(--bg-card-muted);
 }
 
 .panel-body {
@@ -154,7 +164,15 @@ a {
 .select:focus,
 .textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: var(--focus-ring);
+}
+
+.input:disabled,
+.select:disabled,
+.textarea:disabled {
+  background: var(--bg-soft);
+  color: var(--text-light);
+  cursor: not-allowed;
 }
 
 .input::placeholder,
@@ -172,11 +190,16 @@ a {
   transition: background 0.2s, transform 0.12s, box-shadow 0.2s, border-color 0.2s;
   font-weight: 600;
   white-space: nowrap;
-  box-shadow: 0 4px 10px rgba(47, 125, 246, 0.24);
+  box-shadow: 0 4px 10px rgba(47, 125, 246, 0.2);
 }
 
 .btn:hover {
   background: var(--primary-hover);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .btn:active {
@@ -184,21 +207,21 @@ a {
 }
 
 .btn.secondary {
-  background: #64748b;
-  box-shadow: 0 4px 10px rgba(100, 116, 139, 0.2);
+  background: var(--secondary);
+  box-shadow: 0 4px 10px rgba(100, 116, 139, 0.16);
 }
 
 .btn.secondary:hover {
-  background: #55657f;
+  background: var(--secondary-hover);
 }
 
 .btn.danger {
   background: var(--danger);
-  box-shadow: 0 4px 10px rgba(216, 61, 61, 0.24);
+  box-shadow: 0 4px 10px rgba(216, 61, 61, 0.2);
 }
 
 .btn.danger:hover {
-  background: linear-gradient(180deg, #e93a3a, #c81f1f);
+  background: var(--danger-hover);
 }
 
 .btn.ghost {
@@ -206,6 +229,10 @@ a {
   color: var(--primary);
   box-shadow: none;
   border: 1px solid #cfe0fb;
+}
+
+.btn.ghost:hover {
+  background: #deebff;
 }
 
 .btn.sm {
@@ -254,8 +281,12 @@ a {
 .table th {
   color: #314a6b;
   font-weight: 600;
-  background: #f7faff;
+  background: var(--bg-card-muted);
   font-size: 12px;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fbfdff;
 }
 
 .table tbody tr:hover {
@@ -292,7 +323,7 @@ a {
 
 .status-tag.info {
   background: #e9f2ff;
-  color: #235fc1;
+  color: var(--info);
   border-color: #cfe0ff;
 }
 
@@ -388,7 +419,7 @@ a {
 }
 
 .text-subtle {
-  color: #64748b;
+  color: var(--text-sub);
 }
 
 .hint-text {
@@ -456,7 +487,7 @@ a {
   padding: 14px;
   border-radius: var(--radius);
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, #f8fbff, #f1f7ff);
+  background: linear-gradient(180deg, #fbfdff, #f4f8ff);
 }
 
 .metric-title {
@@ -511,5 +542,16 @@ a {
   }
   .metric-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

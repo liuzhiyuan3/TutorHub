@@ -6,6 +6,7 @@
     </view>
 
     <view class="filter-bar">
+      <view class="filter-group-title">常用筛选</view>
       <view class="filter-top">
         <view class="chip chip-main" bindtap="onTapCurrentDistrict"><text class="i i-location inline-icon"></text>{{currentDistrictText}}<text class="i i-menu chip-arrow-icon"></text></view>
         <view class="chip chip-toggle {{nearbyOnly ? 'chip-active' : ''}}" bindtap="toggleNearby"><text class="i i-location inline-icon"></text>附近{{nearbyKm}}km</view>
@@ -34,9 +35,11 @@
     </view>
 
     <view class="advanced-panel" wx:if="{{advancedVisible}}">
+      <view class="filter-group-title">高级筛选</view>
       <input class="input" placeholder="关键词（身份/学校/专业）" value="{{query.keyword}}" bindinput="onKeywordInput" />
       <input class="input" placeholder="学校关键词（可选）" value="{{query.schoolKeyword}}" bindinput="onSchoolKeywordInput" />
       <view class="filter-actions">
+        <view class="btn secondary" bindtap="resetFilters">清空筛选</view>
         <view class="btn ghost" bindtap="loadFilters">刷新筛选</view>
         <view class="btn" bindtap="onSearch">应用筛选</view>
       </view>
@@ -99,16 +102,14 @@
             <view class="chip-mini chip-green" wx:if="{{item.auditStatus === 1}}">已认证</view>
           </view>
           <view class="teacher-row2">{{item.subjectText}}</view>
-          <view class="teacher-row3">{{item.teacherSchool || '-' }} · {{item.teacherMajor || '-'}}</view>
-          <view class="teacher-row3">身份：{{item.identityText || '-'}} · 学历：{{item.teacherEducation || '-'}}</view>
+          <view class="teacher-row3">{{item.teacherSchool || '-' }} · {{item.teacherMajor || '-'}} · {{item.teacherEducation || '-'}}</view>
           <view class="teacher-row4">
             <view class="teacher-distance" wx:if="{{item.distanceText}}">{{item.distanceText}}</view>
             <view class="teacher-meta">成交{{item.historyDealCount || 0}}单</view>
-            <view class="teacher-meta">被录用{{item.hireCount || 0}}次</view>
             <view class="teacher-meta">成功{{item.teacherSuccessCount || 0}}次</view>
             <view class="teacher-meta">热度{{item.teacherViewCount || 0}}</view>
           </view>
-          <view class="teacher-row5">区域：{{item.regionText}}</view>
+          <view class="teacher-row5">区域：{{item.regionText}} · 身份：{{item.identityText || '-'}}</view>
         </view>
       </view>
       <view class="btn teacher-cta">查看详情</view>

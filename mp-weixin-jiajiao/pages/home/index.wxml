@@ -13,85 +13,82 @@
     <view class="section-head">
       <view class="section-title-wrap">
         <text class="section-icon i i-menu"></text>
-        <view class="section-title section-title-sm">快捷入口</view>
+        <view class="section-title section-title-sm">今日核心任务</view>
       </view>
       <view class="tag info">{{roleMode === 'guest' ? '游客模式' : (roleMode === 'teacher' ? '教员模式' : '家长模式')}}</view>
     </view>
-    <view class="section-desc">围绕找老师、发需求、接单与订单追踪的完整流程</view>
+    <view class="section-desc">优先完成关键动作：找老师、发布/接单、订单跟进</view>
 
     <view wx:if="{{roleMode === 'guest'}}" class="guest-tip">
       当前为游客模式，可先浏览内容；涉及预约、接单、发布需求时再登录。
       <view class="btn ghost" bindtap="goLogin"><text class="i i-wechat inline-icon"></text>立即登录</view>
     </view>
 
-    <view class="grid role-grid" wx:if="{{roleMode === 'parent'}}">
-      <view class="grid-item" bindtap="goTeachers">
+    <view class="core-grid" wx:if="{{roleMode === 'parent'}}">
+      <view class="core-item" bindtap="goTeachers">
         <text class="i i-search grid-item-icon"></text>
         <view class="grid-title">快速请家教</view>
-        <view class="grid-sub">我要挑选教员</view>
+        <view class="grid-sub">挑选教员</view>
       </view>
-      <view class="grid-item" bindtap="goRequirementCreate">
+      <view class="core-item" bindtap="goRequirementCreate">
         <text class="i i-requirement grid-item-icon"></text>
         <view class="grid-title">发布家教需求</view>
-        <view class="grid-sub">家长快捷发布</view>
+        <view class="grid-sub">家长发布</view>
       </view>
-      <view class="grid-item" bindtap="goRequirements">
-        <text class="i i-menu grid-item-icon"></text>
-        <view class="grid-title">需求广场</view>
-        <view class="grid-sub">浏览平台需求信息</view>
-      </view>
-      <view class="grid-item" bindtap="goOrders">
+      <view class="core-item" bindtap="goOrders">
         <text class="i i-order grid-item-icon"></text>
         <view class="grid-title">我的订单</view>
-        <view class="grid-sub">跟踪订单状态</view>
+        <view class="grid-sub">跟踪进度</view>
       </view>
     </view>
 
-    <view class="grid role-grid" wx:elif="{{roleMode === 'teacher'}}">
-      <view class="grid-item" bindtap="goRequirements">
+    <view class="core-grid" wx:elif="{{roleMode === 'teacher'}}">
+      <view class="core-item" bindtap="goRequirements">
         <text class="i i-requirement grid-item-icon"></text>
         <view class="grid-title">接单列表</view>
-        <view class="grid-sub">查看可接需求</view>
+        <view class="grid-sub">查看需求</view>
       </view>
-      <view class="grid-item" bindtap="goTeachers">
-        <text class="i i-search grid-item-icon"></text>
-        <view class="grid-title">教员名录</view>
-        <view class="grid-sub">查看热门教员</view>
-      </view>
-      <view class="grid-item" bindtap="goOrders">
+      <view class="core-item" bindtap="goOrders">
         <text class="i i-order grid-item-icon"></text>
         <view class="grid-title">我的订单</view>
-        <view class="grid-sub">管理授课进度</view>
+        <view class="grid-sub">授课进度</view>
       </view>
-      <view class="grid-item" bindtap="goRequirements">
-        <text class="i i-location grid-item-icon"></text>
-        <view class="grid-title">需求筛选</view>
-        <view class="grid-sub">按学科和区域匹配</view>
+      <view class="core-item" bindtap="goTeachers">
+        <text class="i i-search grid-item-icon"></text>
+        <view class="grid-title">教员名录</view>
+        <view class="grid-sub">热门教员</view>
       </view>
     </view>
 
-    <view class="grid role-grid" wx:else>
-      <view class="grid-item" bindtap="goTeachers">
+    <view class="core-grid" wx:else>
+      <view class="core-item" bindtap="goTeachers">
         <text class="i i-search grid-item-icon"></text>
         <view class="grid-title">浏览教员</view>
-        <view class="grid-sub">先看老师再登录</view>
+        <view class="grid-sub">先看老师</view>
       </view>
-      <view class="grid-item" bindtap="goRequirements">
+      <view class="core-item" bindtap="goRequirements">
         <text class="i i-requirement grid-item-icon"></text>
         <view class="grid-title">浏览需求</view>
-        <view class="grid-sub">先看需求信息</view>
+        <view class="grid-sub">先看需求</view>
       </view>
-      <view class="grid-item" bindtap="goOrders">
-        <text class="i i-order grid-item-icon"></text>
-        <view class="grid-title">我的订单</view>
-        <view class="grid-sub">登录后查看详情</view>
-      </view>
-      <view class="grid-item" bindtap="goLogin">
+      <view class="core-item" bindtap="goLogin">
         <text class="i i-wechat grid-item-icon"></text>
         <view class="grid-title">立即登录</view>
-        <view class="grid-sub">选择家长或教员</view>
+        <view class="grid-sub">解锁完整功能</view>
       </view>
     </view>
+  </view>
+
+  <view class="card service-entry-card" wx:if="{{!loading}}">
+    <view class="section-head">
+      <view class="section-title-wrap">
+        <text class="section-icon i i-menu"></text>
+        <view class="section-title section-title-sm">更多服务</view>
+      </view>
+      <view class="section-sub">{{showMoreServices ? '已展开' : '点击展开'}}</view>
+    </view>
+    <view class="service-toggle-hint">运营推荐、热门标签和实时动态已下沉到该区域。</view>
+    <view class="btn ghost" bindtap="toggleMoreServices">{{showMoreServices ? '收起更多服务' : '展开更多服务'}}</view>
   </view>
 
   <view wx:if="{{error}}" class="error-box">
@@ -105,6 +102,7 @@
     <view class="skeleton line short"></view>
   </view>
 
+  <block wx:if="{{showMoreServices}}">
   <view class="card" wx:if="{{!loading && slides.length}}">
     <view class="section-head">
       <view class="section-title-wrap"><text class="section-icon i i-menu"></text><view class="section-title section-title-sm">运营位</view></view>
@@ -221,6 +219,7 @@
       <view class="ad-url">{{item.link || '暂无链接'}}</view>
     </view>
   </view>
+  </block>
 
   <auth-sheet
     visible="{{authSheetVisible}}"

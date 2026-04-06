@@ -62,6 +62,13 @@
   margin-top: 14rpx;
 }
 
+.core-grid {
+  margin-top: 14rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10rpx;
+}
+
 .guest-tip {
   margin-top: 12rpx;
   padding: 12rpx;
@@ -81,6 +88,14 @@
   border: 1rpx solid #d5e4fb;
   border-radius: 16rpx;
   padding: 20rpx;
+}
+
+.core-item {
+  background: linear-gradient(180deg, #f7fbff, #edf5ff);
+  border: 1rpx solid #d5e4fb;
+  border-radius: 16rpx;
+  padding: 16rpx 12rpx;
+  text-align: center;
 }
 
 .grid-item-icon {
@@ -104,9 +119,20 @@
 }
 
 .grid-sub {
-  margin-top: 8rpx;
+  margin-top: 6rpx;
   color: #607491;
   font-size: 22rpx;
+}
+
+.service-entry-card {
+  border: 1rpx solid #dce8fc;
+  background: linear-gradient(180deg, #fbfdff, #f5f9ff);
+}
+
+.service-toggle-hint {
+  color: #607491;
+  font-size: 23rpx;
+  margin-bottom: 12rpx;
 }
 
 .retry-btn {

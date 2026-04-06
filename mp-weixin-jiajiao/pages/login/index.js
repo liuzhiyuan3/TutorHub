@@ -1,4 +1,4 @@
-const authService = require('../../utils/auth-service')
+﻿const authService = require('../../utils/auth-service')
 const globalStore = require('../../utils/global-store')
 const { resolveRegionWithFallback, resolveRegionSmart, toFallbackMessage } = require('../../utils/location-service')
 const { normalizeUserType } = require('../../utils/session-state')
@@ -321,7 +321,7 @@ Page({
 
   navigateAfterLogin() {
     const redirect = this.data.redirect ? decodeURIComponent(this.data.redirect) : ''
-    const tabPaths = ['/pages/home/index', '/pages/requirements/index', '/pages/orders/index', '/pages/profile/index']
+    const tabPaths = ['/pages/home/index', '/pages/requirements/index', '/pages/orders/index', '/pages/profile/index', '/pages/teacher-requirements/index']
 
     if (redirect) {
       const purePath = redirect.split('?')[0]
@@ -367,3 +367,4 @@ Page({
     wx.navigateTo({ url: `/pages/register/index?userType=${userType}` })
   }
 })
+

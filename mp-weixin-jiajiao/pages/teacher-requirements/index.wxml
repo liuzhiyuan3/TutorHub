@@ -1,0 +1,169 @@
+<view class="page-wrap tab-page">
+  <view class="card filter-sticky">
+    <view class="section-head">
+      <view class="section-title-wrap">
+        <text class="section-icon i i-requirement"></text>
+        <view class="section-title section-title-sm">接单列表</view>
+      </view>
+      <view class="section-sub">共 {{ list.length }} 条</view>
+    </view>
+
+    <view class="quick-filter-row">
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item {{selectedSubjectId ? 'selected' : ''}}" bindtap="openSubjectPanel">
+          <text class="i i-search filter-icon"></text>
+          <text class="quick-filter-label">{{selectedSubjectName || '科目'}}</text>
+          <text class="arrow">▼</text>
+        </view>
+      </view>
+
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item {{(filters.regions[regionIndex] && filters.regions[regionIndex].id) ? 'selected' : ''}}" bindtap="openRegionSheet">
+          <text class="i i-location filter-icon"></text>
+          <text class="quick-filter-label">{{selectedRegionLabel || '区域'}}</text>
+          <text class="arrow">▼</text>
+        </view>
+      </view>
+
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item {{budgetRangeIndex > 0 ? 'selected' : ''}}" bindtap="openBudgetSheet">
+          <text class="quick-filter-label">{{budgetRangeOptions[budgetRangeIndex].label === '预算不限' ? '预算' : budgetRangeOptions[budgetRangeIndex].label}}</text>
+          <text class="arrow">▼</text>
+        </view>
+      </view>
+
+      <view class="quick-filter-cell">
+        <view class="quick-filter-item quick-filter-action {{showAdvanced ? 'active' : ''}}" bindtap="toggleAdvancedPanel">
+          <text class="quick-filter-label">筛选</text>
+          <text class="arrow">▼</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{showSubjectPanel}}" class="subject-panel-mask" bindtap="closeSubjectPanel">
+      <view class="subject-panel" catchtap="noop">
+        <view class="subject-panel-head">
+          <text class="subject-panel-title">学科筛选</text>
+          <text class="subject-panel-reset" bindtap="resetSubjectFilter">重置</text>
+        </view>
+        <view class="subject-panel-sub">左侧选分类，右侧点学科，立即生效</view>
+        <view class="subject-panel-body">
+          <scroll-view class="category-col" scroll-y="true">
+            <view wx:for="{{subjectCategoryTree}}" wx:key="id" data-index="{{index}}" bindtap="chooseCategory" class="category-item {{activeCategoryIndex === index ? 'active' : ''}}">{{item.categoryName}}</view>
+          </scroll-view>
+          <scroll-view class="subject-col" scroll-y="true">
+            <view class="subject-chip {{selectedSubjectId === '' ? 'active' : ''}}" bindtap="resetSubjectFilter">全部学科</view>
+            <view wx:for="{{currentCategorySubjects}}" wx:key="id" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="chooseSubject" class="subject-chip {{selectedSubjectId === item.id ? 'active' : ''}}">{{item.name}}</view>
+            <view wx:if="{{!currentCategorySubjects.length}}" class="subject-empty">当前分类暂无子学科</view>
+          </scroll-view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{showRegionSheet}}" class="subject-panel-mask" bindtap="closeRegionSheet">
+      <view class="subject-panel region-panel" catchtap="noop">
+        <view class="subject-panel-head">
+          <text class="subject-panel-title">区域筛选</text>
+          <text class="subject-panel-reset" bindtap="resetAllFilters">重置</text>
+        </view>
+        <view class="subject-panel-sub">先选省市，再点区县，立即生效</view>
+        <view class="region-cascade-row">
+          <picker mode="selector" range="{{provinceOptions}}" range-key="name" bindchange="onProvinceChange">
+            <view class="region-cascade-item">{{selectedProvinceName || '全部省份'}}<text class="arrow">▼</text></view>
+          </picker>
+          <picker mode="selector" range="{{cityOptions}}" range-key="name" bindchange="onCityChange">
+            <view class="region-cascade-item">{{selectedCityName || '全部城市'}}<text class="arrow">▼</text></view>
+          </picker>
+        </view>
+        <scroll-view class="region-district-scroll" scroll-y="true">
+          <view class="region-district-wrap">
+            <view
+              wx:for="{{districtChips}}"
+              wx:key="id"
+              class="subject-chip {{activeDistrictId === item.id ? 'active' : ''}}"
+              data-id="{{item.id}}"
+              bindtap="chooseDistrict"
+            >{{item.name}}</view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="error-box">
+    {{error}}
+    <view class="btn ghost retry-btn" bindtap="load">重试</view>
+  </view>
+
+  <view wx:if="{{loading}}">
+    <view class="card skeleton-card" wx:for="{{3}}" wx:key="*this">
+      <view class="skeleton line-short"></view>
+      <view class="skeleton line"></view>
+      <view class="skeleton line short"></view>
+    </view>
+  </view>
+
+  <view wx:elif="{{!list.length}}" class="card">
+    <mp-empty text="暂无可接需求" iconType="i-requirement" />
+  </view>
+
+  <block wx:else>
+    <view class="card req-card" wx:for="{{list}}" wx:key="id">
+      <view class="row">
+        <view class="title"><text class="i i-requirement inline-icon"></text>{{item.requirementTitle}}</view>
+        <view class="{{ item.requirementStatus === 0 ? 'tag pending' : item.requirementStatus === 2 ? 'tag success' : item.requirementStatus === 3 ? 'tag error' : 'tag info' }}">
+          {{item.requirementStatusText || statusMap[item.requirementStatus] || '未知'}}
+        </view>
+      </view>
+      <view class="muted">{{item.requirementGrade}} · {{item.requirementAddress || '-'}}</view>
+      <view class="muted">预算：{{item.requirementBudgetMin || item.requirementSalary || 0}} - {{item.requirementBudgetMax || item.requirementSalary || 0}} 元/小时</view>
+      <view class="muted">紧急程度：{{item.requirementUrgencyText || '普通'}} · 方式：{{item.requirementTutoringMethod === 0 ? '线上' : (item.requirementTutoringMethod === 1 ? '线下' : '线上线下')}}</view>
+      <view class="muted" wx:if="{{item.expectedTimeSlotsText}}">期望时段：{{item.expectedTimeSlotsText}}</view>
+      <view class="btn {{item.requirementStatus !== 0 || item.teacherProfileVisibility !== 'VISIBLE' ? 'disabled' : ''}}" bindtap="receive" data-id="{{item.id}}" data-status="{{item.requirementStatus}}" data-title="{{item.requirementTitle}}" data-visibility="{{item.teacherProfileVisibility}}">
+        {{ receivingId === item.id ? '接单中...' : item.receiveActionText }}
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{!loading && list.length}}" class="card load-more-card">
+    <view wx:if="{{hasMore}}" class="btn ghost" bindtap="onLoadMore">加载更多</view>
+    <view wx:else class="section-sub">没有更多需求了</view>
+  </view>
+
+  <auth-sheet
+    visible="{{authSheetVisible}}"
+    role="{{authSheetRole}}"
+    bindclose="onAuthSheetClose"
+    bindsuccess="onAuthSheetSuccess"
+  />
+
+  <van-popup show="{{showAdvanced}}" position="bottom" round bind:close="closeAdvancedPanel">
+    <view class="advanced-popup">
+      <view class="advanced-title">高级筛选</view>
+      <van-field custom-class="popup-field" label="关键词" placeholder="标题/描述/地址" value="{{advancedFilters.keyword}}" border="{{false}}" bind:input="onKeywordInput" />
+      <picker mode="selector" range="{{urgencyOptions}}" range-key="label" bindchange="onUrgencyChange">
+        <view class="picker-field">紧急程度：{{urgencyOptions[urgencyIndex].label}}</view>
+      </picker>
+      <picker mode="selector" range="{{tutoringMethodOptions}}" range-key="label" bindchange="onTutoringMethodChange">
+        <view class="picker-field">授课方式：{{tutoringMethodOptions[tutoringMethodIndex].label}}</view>
+      </picker>
+      <picker mode="selector" range="{{sortOptions}}" range-key="label" bindchange="onSortChange">
+        <view class="picker-field">排序：{{sortOptions[sortIndex].label}}</view>
+      </picker>
+      <view class="filter-actions">
+        <van-button plain type="primary" custom-class="filter-btn" bind:click="onResetAdvanced">重置高级</van-button>
+        <van-button plain type="info" custom-class="filter-btn" bind:click="resetAllFilters">全部重置</van-button>
+        <van-button type="primary" custom-class="filter-btn" bind:click="applyAdvancedFilter">应用筛选</van-button>
+      </view>
+    </view>
+  </van-popup>
+
+  <van-action-sheet
+    show="{{showBudgetSheet}}"
+    actions="{{budgetActions}}"
+    cancel-text="取消"
+    bind:close="closeBudgetSheet"
+    bind:cancel="closeBudgetSheet"
+    bind:select="onBudgetSelect"
+  />
+</view>

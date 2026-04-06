@@ -54,13 +54,17 @@
         <view class="muted">支付状态: {{item.payStatus === 1 ? '已支付' : '待支付'}}</view>
         <view class="status-desc">{{item.displayStatusText || item.stageText || '状态未知'}}</view>
 
-        <view class="action-row">
-          <view wx:if="{{item.sourceType === 'ORDER'}}" class="btn ghost" bindtap="goTimeline" data-id="{{item.id}}">轨迹</view>
-          <view wx:if="{{item.canPay}}" class="btn" bindtap="goPay" data-id="{{item.id}}" data-ordernumber="{{item.orderNumber}}" data-amount="{{item.orderAmount}}">去支付</view>
-          <view wx:if="{{roleMode === 'teacher' && item.sourceType === 'ORDER'}}" class="btn {{ item.canTo1 ? '' : 'disabled' }}" bindtap="updateStatus" data-id="{{item.id}}" data-status="1" data-current="{{item.orderStatus}}">进行中</view>
-          <view wx:if="{{roleMode === 'teacher' && item.sourceType === 'ORDER'}}" class="btn success {{ item.canTo2 ? '' : 'disabled' }}" bindtap="updateStatus" data-id="{{item.id}}" data-status="2" data-current="{{item.orderStatus}}">完成</view>
-          <view wx:if="{{roleMode === 'parent' && item.sourceType === 'ORDER'}}" class="btn secondary {{ item.canTo3 ? '' : 'disabled' }}" bindtap="updateStatus" data-id="{{item.id}}" data-status="3" data-current="{{item.orderStatus}}">取消订单</view>
-          <view wx:if="{{roleMode === 'parent' && item.canCancelRequirement}}" class="btn secondary" bindtap="cancelRequirement" data-id="{{item.requirementId}}">取消需求</view>
+        <view class="primary-action-row">
+          <view wx:if="{{item.canPay}}" class="btn primary-cta" bindtap="goPay" data-id="{{item.id}}" data-ordernumber="{{item.orderNumber}}" data-amount="{{item.orderAmount}}">去支付</view>
+          <view wx:elif="{{roleMode === 'teacher' && item.sourceType === 'ORDER' && item.canTo1}}" class="btn primary-cta" bindtap="updateStatus" data-id="{{item.id}}" data-status="1" data-current="{{item.orderStatus}}">开始服务</view>
+          <view wx:elif="{{roleMode === 'teacher' && item.sourceType === 'ORDER' && item.canTo2}}" class="btn success primary-cta" bindtap="updateStatus" data-id="{{item.id}}" data-status="2" data-current="{{item.orderStatus}}">标记完成</view>
+          <view wx:elif="{{roleMode === 'parent' && item.sourceType === 'ORDER' && item.canTo3}}" class="btn secondary primary-cta" bindtap="updateStatus" data-id="{{item.id}}" data-status="3" data-current="{{item.orderStatus}}">取消订单</view>
+          <view wx:elif="{{roleMode === 'parent' && item.canCancelRequirement}}" class="btn secondary primary-cta" bindtap="cancelRequirement" data-id="{{item.requirementId}}">取消需求</view>
+          <view wx:else class="btn disabled primary-cta">暂无可执行操作</view>
+        </view>
+
+        <view class="action-row secondary-action-row">
+          <view wx:if="{{item.sourceType === 'ORDER'}}" class="btn ghost btn-sm" bindtap="goTimeline" data-id="{{item.id}}">查看轨迹</view>
         </view>
       </view>
     </block>

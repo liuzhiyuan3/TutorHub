@@ -604,6 +604,41 @@ Page({
       this.setData({ advancedVisible: false })
     }
   },
+  resetFilters() {
+    this.setData({
+      query: {
+        subjectId: '',
+        regionId: '',
+        schoolKeyword: '',
+        keyword: '',
+        sortBy: 'hot'
+      },
+      sortIndex: 0,
+      nearbyOnly: false,
+      advancedVisible: false,
+      selectedSubjectName: '科目',
+      showSubjectPanel: false,
+      activeCategoryIndex: 0,
+      selectedProvinceName: '',
+      selectedCityName: '',
+      provinceIndex: 0,
+      cityIndex: 0,
+      activeDistrictId: '',
+      districtChips: [{ id: '', name: '全部' }]
+    }, () => {
+      const nextState = this.buildRegionCascadeState(this.data.filters.regionTree || [], '', null, false)
+      this.setData({
+        provinceOptions: nextState.provinceOptions,
+        cityOptions: nextState.cityOptions,
+        provinceIndex: nextState.provinceIndex,
+        cityIndex: nextState.cityIndex,
+        selectedProvinceName: nextState.selectedProvinceName,
+        selectedCityName: nextState.selectedCityName,
+        districtChips: nextState.districtChips,
+        activeDistrictId: nextState.activeDistrictId
+      }, () => this.load(true))
+    })
+  },
   onLoadMore() {
     this.load(false)
   },

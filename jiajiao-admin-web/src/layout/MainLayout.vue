@@ -136,7 +136,7 @@ onMounted(loadMenuIconMapping)
 
 .sidebar {
   width: 256px;
-  background: linear-gradient(170deg, #1e3a8a, #1d4ed8 56%, #1554c7);
+  background: var(--sidebar-bg);
   color: #fff;
   padding: 18px 12px 14px;
   overflow: auto;
@@ -173,7 +173,7 @@ onMounted(loadMenuIconMapping)
 .brand-sub {
   margin-top: 3px;
   font-size: 11px;
-  color: rgba(219, 234, 254, 0.86);
+  color: var(--sidebar-text-subtle);
 }
 
 .menu-group {
@@ -196,7 +196,7 @@ onMounted(loadMenuIconMapping)
   padding: 10px 12px;
   border-radius: 10px;
   margin-bottom: 6px;
-  color: #e7f1ff;
+  color: var(--sidebar-text);
   border: 1px solid transparent;
   transition: all 0.2s;
 }
@@ -207,11 +207,11 @@ onMounted(loadMenuIconMapping)
 }
 
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--sidebar-hover);
 }
 
 .menu-item.router-link-active {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--sidebar-active);
   border-color: rgba(255, 255, 255, 0.44);
   color: #fff;
 }
@@ -228,6 +228,7 @@ onMounted(loadMenuIconMapping)
   padding: 14px 18px;
   min-height: 82px;
   border-radius: 18px;
+  background: var(--bg-card);
 }
 
 .header-breadcrumb {
@@ -259,8 +260,8 @@ onMounted(loadMenuIconMapping)
   padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid var(--line);
-  background: #f6faff;
-  color: #30527c;
+  background: var(--bg-soft);
+  color: var(--text-main);
   font-size: 12px;
   font-weight: 700;
 }

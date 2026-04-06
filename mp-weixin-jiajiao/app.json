@@ -11,6 +11,7 @@
     "pages/order-timeline/index",
     "pages/pay/index",
     "pages/pay-result/index",
+    "pages/teacher-requirements/index",
     "pages/requirements/index",
     "pages/orders/index",
     "pages/profile/index"

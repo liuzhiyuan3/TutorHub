@@ -269,6 +269,11 @@ Page({
   },
 
   goRequirements() {
+    const roleMode = getRoleMode()
+    if (roleMode === 'teacher') {
+      wx.navigateTo({ url: '/pages/teacher-requirements/index' })
+      return
+    }
     wx.switchTab({ url: '/pages/requirements/index' })
   },
 

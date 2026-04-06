@@ -168,6 +168,18 @@ const lineEmpty = computed(() => trendRows.value.length === 0 || selectedMetricS
 const statusEmpty = computed(() => statusRows.value.every((item) => Number(item.value || 0) === 0))
 const regionEmpty = computed(() => regionRows.value.length === 0)
 const rankEmpty = computed(() => rankRows.value.length === 0)
+const totalOrders = computed(() => Number(cards.value.find((item) => item.key === 'orderTotal')?.value || 0))
+const totalRequirements = computed(() => Number(cards.value.find((item) => item.key === 'requirementTotal')?.value || 0))
+const completedOrders = computed(() => Number(statusRows.value.find((item) => item.name === '已完成')?.value || 0))
+const completeRate = computed(() => {
+  if (!totalOrders.value) return 0
+  return Math.round((completedOrders.value / totalOrders.value) * 100)
+})
+const pendingReviewTotal = computed(() => {
+  const teacherPending = Number(bizCards.value.find((item) => item.key === 'teacherPendingAuditTotal')?.value || 0)
+  const requirementPending = Number(bizCards.value.find((item) => item.key === 'requirementPendingAuditTotal')?.value || 0)
+  return teacherPending + requirementPending
+})
 
 function formatLocalDate(date) {
   const year = date.getFullYear()
@@ -277,42 +289,57 @@ onMounted(load)
 
 <template>
   <div class="page-block">
-    <h3 class="section-title">运营概览</h3>
-    <p class="section-subtitle">总览卡片、趋势、分布与排行统一展示</p>
+    <h3 class="section-title">运营总览</h3>
+    <p class="section-subtitle">管理端决策入口：先看核心指标，再看趋势和分布</p>
 
-    <div class="panel panel-mt-14">
+    <div class="overview-strip panel-mt-14">
+      <div class="overview-item">
+        <span class="overview-label">需求转订单规模</span>
+        <strong class="overview-value">{{ totalRequirements }} / {{ totalOrders }}</strong>
+      </div>
+      <div class="overview-item">
+        <span class="overview-label">订单完成率</span>
+        <strong class="overview-value">{{ completeRate }}%</strong>
+      </div>
+      <div class="overview-item">
+        <span class="overview-label">待处理审核量</span>
+        <strong class="overview-value">{{ pendingReviewTotal }}</strong>
+      </div>
+    </div>
+
+    <div class="panel panel-mt-12">
       <div class="panel-head">
-        <strong>时间范围</strong>
+        <strong>总览筛选</strong>
         <span class="table-meta">默认展示最近 {{ rangeDays }} 天（{{ granularityLabel }}）</span>
       </div>
       <div class="panel-body">
-        <div class="toolbar toolbar-no-bottom dashboard-toolbar">
-          <select v-model.number="rangeDays" class="select col-span-2">
+        <div class="dashboard-toolbar dashboard-toolbar-primary">
+          <select v-model.number="rangeDays" class="select">
             <option :value="7">近7天</option>
             <option :value="15">近15天</option>
             <option :value="30">近30天</option>
           </select>
-          <select v-model="granularity" class="select col-span-2">
+          <select v-model="granularity" class="select">
             <option value="day">日趋势</option>
             <option value="week">周趋势</option>
             <option value="month">月趋势</option>
           </select>
-          <button class="btn col-span-1" :disabled="loading" @click="load">刷新看板</button>
+          <button class="btn" :disabled="loading" @click="load">刷新看板</button>
         </div>
-        <div class="dashboard-controls">
+        <div class="dashboard-toolbar dashboard-toolbar-secondary">
           <div class="control-group">
-            <span class="control-label">趋势指标</span>
+            <span class="control-label">趋势指标（常用）</span>
             <label v-for="item in metricOptions" :key="item.key" class="control-item">
               <input v-model="selectedMetrics" type="checkbox" :value="item.key" />
               <span>{{ item.label }}</span>
             </label>
+          </div>
+          <div class="control-group">
+            <span class="control-label">高级显示</span>
             <label class="control-item">
               <input v-model="compareMode" type="checkbox" />
               <span>显示环比基线</span>
             </label>
-          </div>
-          <div class="control-group">
-            <span class="control-label">图表显示</span>
             <label class="control-item"><input v-model="visibleCharts.trend" type="checkbox" /> <span>业务趋势</span></label>
             <label class="control-item"><input v-model="visibleCharts.status" type="checkbox" /> <span>订单状态</span></label>
             <label class="control-item"><input v-model="visibleCharts.region" type="checkbox" /> <span>区域分布</span></label>
@@ -348,17 +375,20 @@ onMounted(load)
       </div>
     </div>
 
-    <div class="charts-grid">
+    <div class="charts-grid-main">
       <ChartPanel
         v-if="visibleCharts.trend"
         title="业务趋势"
-        :subtitle="`指标趋势（${granularityLabel}）`"
+        :subtitle="`核心趋势（${granularityLabel}）`"
         :loading="loading"
         :option="lineOption"
         :height="320"
         :empty="lineEmpty"
         empty-text="暂无趋势数据"
       />
+    </div>
+
+    <div class="charts-grid-secondary">
       <ChartPanel
         v-if="visibleCharts.status"
         title="订单状态分布"
@@ -394,14 +424,39 @@ onMounted(load)
 </template>
 
 <style scoped>
-.dashboard-toolbar {
-  grid-template-columns: 1.2fr 1fr auto;
+.overview-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
-.dashboard-controls {
-  margin-top: 10px;
+.overview-item {
+  background: linear-gradient(180deg, #f9fcff, #f2f8ff);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
+  flex-direction: column;
+  gap: 6px;
+}
+.overview-label {
+  color: var(--text-sub);
+  font-size: 12px;
+}
+.overview-value {
+  font-size: 24px;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+.dashboard-toolbar {
+  display: grid;
+  gap: 10px;
+}
+.dashboard-toolbar-primary {
+  grid-template-columns: 1fr 1fr auto;
+}
+.dashboard-toolbar-secondary {
+  margin-top: 10px;
+  grid-template-columns: 1.4fr 1.8fr;
 }
 .control-group {
   display: flex;
@@ -420,17 +475,22 @@ onMounted(load)
   font-size: 12px;
   color: var(--text-main);
 }
-.charts-grid {
+.charts-grid-main {
+  margin-top: 14px;
+}
+.charts-grid-secondary {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 @media (max-width: 1200px) {
-  .dashboard-toolbar {
+  .overview-strip,
+  .dashboard-toolbar-primary,
+  .dashboard-toolbar-secondary {
     grid-template-columns: 1fr;
   }
-  .charts-grid {
+  .charts-grid-secondary {
     grid-template-columns: 1fr;
   }
 }

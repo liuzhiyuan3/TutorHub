@@ -21,6 +21,11 @@
   border: 1rpx solid #d9e8ff;
 }
 
+.profile-quick-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1rpx solid #d9e8ff;
+}
+
 .profile-main-top {
   display: flex;
   align-items: flex-start;
